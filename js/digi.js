@@ -11,10 +11,21 @@ function loadMoviePosters() {
 		var endpoint = 'https://api.themoviedb.org/3/search/movie?api_key=f8bacc22524d435a1476adae350b4d41&query=' + title;
 
 		jQuery.getJSON(endpoint, function(json) {
-			console.log(json);
-
-			currentImage.attr('src', 'https://image.tmdb.org/t/p/w500/' + json.results[0].poster_path);
+			if (json.results.length > 0) {
+				currentImage.attr('src', 'https://image.tmdb.org/t/p/w500/' + json.results[0].poster_path);
+			} else {
+				currentImage.attr('src', '/images/placeholder.jpg');
+			}
 		});
+	});
+}
+
+
+function initAccountButton() {
+	console.log(jQuery('#account-button').html());
+	jQuery('#account-button').click( function() {
+		console.log('here');
+		window.location.replace("/profile");
 	});
 }
 
@@ -22,5 +33,6 @@ function loadMoviePosters() {
 jQuery(document).ready( function() {
 
 	loadMoviePosters();
+	initAccountButton();
 
 });

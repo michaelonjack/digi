@@ -1,6 +1,7 @@
 import os
 import jinja2
 import webapp2
+import random
 from google.appengine.api import mail
 from auth import getMovieDBKey
 
@@ -27,9 +28,19 @@ class Handler(webapp2.RequestHandler):
 
 class MainPage(Handler):
     def get(self):
-        self.render("digi.html")
+        movies = ["Up", "Toy Story", "Beauty and the Beast", "Ratatouille", "Toy Story 3", "The Thing"]
+        self.render("digi.html", movies=movies)
+
+
+
+class ProfilePage(Handler):
+    def get(self):
+        colors = ["green", "red", "blue"]
+        selling = ["Moana", "Frozen", "Finding Nemo", "Finding Dory", "Monsters University", "Lego Batman", "Whiplash", "La la land"]
+        self.render("profile.html", color=random.choice(colors), selling=selling)
 
 
 application = webapp2.WSGIApplication([
-    ('/', MainPage)
+    ('/', MainPage),
+    ('/profile', ProfilePage)
 ], debug=True)

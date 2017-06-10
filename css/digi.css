@@ -12,6 +12,10 @@ body {
 	width:20.8em;
 }
 
+.poster-row {
+	margin-top: 1.5em;
+}
+
 .poster-container {
 	position: relative;
 }
@@ -38,6 +42,11 @@ body {
 	font-family: 'Lato', sans-serif;
 }
 
+#profile-picture {
+	width:20em;
+	height:20em;
+}
+
 a.darken {
     display: inline-block;
     background: black;
@@ -60,3 +69,4 @@ a.darken:hover img.poster-med {
 a.darken:hover .poster-title-container {
     opacity:1;
 }
+
