@@ -9,6 +9,7 @@ from google.appengine.ext import ndb
 
 template_dir = os.path.join(os.path.dirname(__file__),'html')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
+        extensions=['jinja2.ext.loopcontrols'],
         autoescape = True) #Jinja will now autoescape all html
 
 
@@ -80,10 +81,26 @@ class MyProfilePage(Handler):
 
             colors = ["green", "red", "blue", "yellow", "purple"]
             selling = ["Whiplash", "The Dark Knight", "Inception", "Gone Girl", "Se7en", "Moonlight"]
-            self.render("self-profile.html", color=random.choice(colors), selling=selling, user=user, log_url=log_url)
+            self.render("myprofile.html", color=random.choice(colors), selling=selling, user=user, log_url=log_url)
+
+
+class PostCodePage(Handler):
+    def get(self):
+        user = users.get_current_user()
+        log_url = ""
+
+        if user:
+            log_url = users.create_logout_url('/')
+
+        else:
+            log_url = users.create_login_url('/')
+
+        self.render("postcode.html", user=user, log_url=log_url)
+
 
 
 application = webapp2.WSGIApplication([
     ('/', MainPage),
-    ('/myprofile', MyProfilePage)
+    ('/myprofile', MyProfilePage),
+    ('/entercode', PostCodePage)
 ], debug=True)

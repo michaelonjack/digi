@@ -16,8 +16,12 @@ handlers:
 - url: /myprofile
   script: digi.application
   login: required
+- url: /entercode
+  script: digi.application
+  login: required
 - url: /.*
   script: digi.application
+  secure: always
 
 libraries:
 - name: jinja2

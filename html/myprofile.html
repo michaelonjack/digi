@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>
+		profile
+	</title>
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="/css/digi.css">
+	<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="/css/bootstrap-horizon.css">
+	<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Lato:100,300,400">
+	<script type="text/javascript" src="/js/jquery-3.1.1.min.js"></script>
+	<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/js/digi.js"></script>
+</head>
+
+<nav class="navbar navbar-default navbar-fixed-top">
+	<div class="container-fluid">
+		<div class="navbar-header">
+	      	<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+	        	<span class="icon-bar"></span>
+	        	<span class="icon-bar"></span>
+	        	<span class="icon-bar"></span>                        
+	      	</button>
+	      	<a class="navbar-brand" href="/">
+	      		<img src="/images/koala-clear.png">
+	      	</a>
+	    </div>
+		<div class="collapse navbar-collapse" id="myNavbar">
+			<ul class="nav navbar-nav">
+				<li><a href="#">UltraViolet</a></li>
+				<li><a href="#">iTunes</a></li>
+				<li><a href="#">Google Play</a></li>
+				<li><a href="#">DMA</a></li>
+			</ul>
+
+			<ul class="nav navbar-nav navbar-right" style="margin-right:1em;">
+				<li>
+					<form class="navbar-form form-inline" role="form">
+			        	<div class="form-group">
+			          		<input id="movie-search" type="text" class="form-control" placeholder="Search">
+			        	</div>
+			      	</form>
+			    </li>
+			    <li>
+			      	{% if user %}
+			        <button onclick="window.location.href='/myprofile'" class="btn navbar-btn">
+		    			<span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+		    		</button>
+		    		<button onclick="window.location.href='{{log_url}}'" class="btn navbar-btn">
+		    			<span onclick="" class="glyphicon glyphicon-log-out" aria-hidden="true"></span>
+		    		</button>
+		    		{% else %}
+		    		<button onclick="window.location.href='{{log_url}}'" class="btn navbar-btn">
+		    			<span class="glyphicon glyphicon-log-in" aria-hidden="true"></span>
+		    		</button>
+		    		{% endif %}
+		    	</li>
+		    </ul>
+		</div>
+	</div>
+</nav>
+
+<body>
+	<div class="container-fluid">
+		<div class="row" style="margin-top:1em; margin-bottom:1em;">
+			<div class="col-xs-3 col-md-3 text-center">
+				<a href="">
+					<img class="profile-sub-icon img-responsive spin" src="/images/settings.png" style="float:right;">
+				</a>
+			</div>
+			<div id="profile-picture-container" class="col-xs-6 col-md-6 text-center">
+				<img id="profile-picture" src="/images/koala-{{color}}.png" class="img-circle img-responsive">
+			</div>
+			<div class="col-xs-3 col-md-3 text-center">
+				<a href="/entercode">
+					<img class="profile-sub-icon img-responsive pulse" src="/images/sell.png" style="float:left;">
+				</a>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-12 col-md-12 text-center">
+				<span style="font-size:2em;">michaelonjack</span>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-12 col-md-12 text-center">
+				<span style="font-size:2em;">326</span>
+				<img src="/images/star.png" class="img-responsive" style="display:inline-block;">
+			</div>
+		</div>
+		<div class="row" style="margin-top:2em;">
+			<div class="col-xs-12 col-md-12 text-center">
+				<span style="font-size:3em;">selling</span>
+			</div>
+		</div>
+		<div class="row row-horizon poster-row text-center" style="margin-bottom:3em;">
+			{% for movie in selling %}
+			<div class="col-xs-6 col-md-3 text-center">
+				<div class="poster-container">
+					<a href="#" class="darken">
+				      	<img src="" class="img-responsive poster-med" movie-title="{{movie}}">
+						<div class="poster-title-container">
+							<div class="poster-title">
+						    	{{movie}}
+						    </div>
+						</div>
+				    </a>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+</body>
+
+</html>
