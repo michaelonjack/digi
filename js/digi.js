@@ -21,11 +21,26 @@ function loadMoviePosters() {
 }
 
 
+function setSelectedMovie() { 
+	jQuery('.movie-link').click(function() { 
+		var poster = jQuery(this).find('.poster-med');
+
+		jQuery('#form-movie-id').val(poster.attr('movie-id'));
+		jQuery('#form-poster-url').val(poster.attr('poster-url'));
+		jQuery('#form-movie-title').val(poster.attr('movie-title'));
+
+		jQuery('#form-row').show();
+	});
+}
+
+
 function initSearchbar() { 
 	jQuery('#results').hide();
-	if (jQuery('.searchbar').length > 0) { 
-		jQuery('.searchbar').keyup(function() { 
-			var movie = jQuery('.searchbar').val();
+	jQuery('#form-row').hide();
+
+	if (jQuery('#movie').length > 0) { 
+		jQuery('#movie').keyup(function() { 
+			var movie = jQuery('#movie').val();
 			var endpoint = 'https://api.themoviedb.org/3/search/movie?api_key=f8bacc22524d435a1476adae350b4d41&query=' + movie;
 			
 			if (movie.length > 0) {
@@ -36,9 +51,12 @@ function initSearchbar() {
 							
 							if (result.poster_path) {
 								jQuery(this).attr('movie-title', result.title);
+								jQuery(this).attr('movie-id', result.id);
+								jQuery(this).attr('poster-url', result.poster_path);
 								jQuery(this).siblings().find('.poster-title').text(result.title);
 								jQuery(this).attr('src', 'https://image.tmdb.org/t/p/w500/' + result.poster_path);
 							} else { 
+								// If the image couldn't be loaded, remove the column from the results
 								jQuery(this).closest('.poster-column').remove();
 							}
 						}
@@ -56,9 +74,8 @@ function initSearchbar() {
 
 jQuery(document).ready( function() {
 
-	loadMoviePosters();
+	//loadMoviePosters();
 	initSearchbar();
-
-	jQuery(document).on('error', 'img', function() {console.log('hi');});
+	setSelectedMovie();
 
 });

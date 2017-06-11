@@ -67,15 +67,15 @@
 	<div class="container-fluid">
 		<div class="row text-center" style="margin-top:3em;">
 			<div class="col-xs-12 col-md-12 text-center">
-				<input type="text" id="movie" class="searchbar" placeholder="search for a movie">
+				<input type="text" id="movie" class="focus-input-lg" placeholder="search for a movie">
 			</div>
 		</div>
 		<div id="results" class="row row-horizon poster-row text-center" style="margin-bottom:3em;">
 			{% for _ in range(1, 10) %}
 			<div class="col-xs-6 col-md-3 text-center poster-column">
 				<div class="poster-container">
-					<a href="#" class="darken">
-				      	<img src="" class="img-responsive poster-med" movie-title="">
+					<a href="#form-format" class="darken movie-link">
+				      	<img src="" class="img-responsive poster-med" movie-title="" movie-id="" poster-url="">
 						<div class="poster-title-container">
 							<div class="poster-title"></div>
 						</div>
@@ -84,7 +84,32 @@
 			</div>
 			{% endfor %}
 		</div>
-
+		<div id="form-row" class="row text-center" style="margin-top:3em;">
+			<div class="col-xs-12 col-md-12 text-center">
+				<form method="post">
+					<div id="form-movie-title-container" class="form-group">
+						<input type="text" id="form-movie-title" name="title" class="form-control" placeholder="movie title" style="margin: 0 auto; width:50%;">
+					</div>
+					<div id="form-price-container" class="form-group">
+						<input type="text" name="price" id="form-price" class="form-control" placeholder="price" style="margin: 0 auto; width:50%;">
+					</div>
+					<div id="form-format-container" class="form-group">
+					    <select class="form-control" id="form-format" name="format" style="text-align: center; margin: 0 auto; width:50%;">
+					      	<option value="" disabled selected>-Format-</option>
+					      	<option value="1">UltraViolet</option>
+					      	<option value="2">iTunes</option>
+					      	<option value="3">Google Play</option>
+					      	<option value="4">DMA</option>
+					    </select>
+					</div>
+					<input type="hidden" id="form-movie-id" name="movie-id">
+					<input type="hidden" id="form-poster-url" name="poster-url">
+					<div class="form-group" style="margin-top:2em; margin-bottom:4em;">
+						<button type="submit" class="btn btn-primary" style="width:50%">Submit</button>
+					</div>
+				</form>
+			</div>
+		</div>
 	</div>
 </body>
 

@@ -14,6 +14,19 @@ jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
 
 
 
+
+
+colors = ["green", "red", "blue", "yellow", "purple"]
+ULTRAVIOLET = 1
+ITUNES = 2
+GOOGLEPLAY = 3
+DMA = 4
+
+
+
+
+
+
 # THREE FUNCTIONS FOR RENDERING BASIC TEMPLATES
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
@@ -29,6 +42,11 @@ class Handler(webapp2.RequestHandler):
 
 
 
+
+
+
+
+
 class User(ndb.Model):
     userid = ndb.StringProperty()
     username = ndb.StringProperty()
@@ -38,9 +56,12 @@ class User(ndb.Model):
 
 class Code(ndb.Model):
     sellerid = ndb.StringProperty()
-    title = ndb.StringProperty()
+    movieid = ndb.StringProperty()
     price = ndb.FloatProperty()
-    codeformat = ndb.StringProperty()
+    codeformat = ndb.IntegerProperty()
+    title = ndb.StringProperty()
+    posterurl = ndb.StringProperty()
+    purchased = ndb.DateTimeProperty()
     created = ndb.DateTimeProperty(auto_now_add=True)
 
 class Review(ndb.Model):
@@ -48,6 +69,23 @@ class Review(ndb.Model):
     sellerid = ndb.StringProperty()
     comment = ndb.StringProperty()
     rating = ndb.IntegerProperty()
+
+
+def addCode(seller_id, movie_id, price, code_format, title, poster_url):
+    newCode = Code(sellerid=seller_id, movieid=movie_id, price=price, codeformat=code_format, title=title, posterurl=poster_url)
+    key = newCode.put()
+
+def getCodesForFormat(_format):
+    query = Code.query(Code.codeformat == _format).order(-Code.created)
+
+    result = query.fetch(20)
+    return result
+
+def getCodesForSeller(sellerid):
+    query = Code.query(Code.sellerid == sellerid).order(-Code.created)
+    return query.fetch()
+
+
 
 
 
@@ -64,10 +102,10 @@ class MainPage(Handler):
         else:
             log_url = users.create_login_url('/')
 
-        ultraviolet = ["The Godfather", "Lord of the Rings", "Casino Royale", "La La Land", "Sicario", "The Thing"]
-        itunes = ["Whiplash", "The Dark Knight", "Inception", "Gone Girl", "Se7en", "Moonlight"]
-        googleplay = ["Shark Tale", "Shrek", "Madagascar", "Antz", "Kung Fu Panda", "Shrek 2"]
-        disney = ["Up", "Toy Story", "Beauty and the Beast", "Ratatouille", "Toy Story 3", "Bambi"]
+        ultraviolet = getCodesForFormat(ULTRAVIOLET)
+        itunes = getCodesForFormat(ITUNES)
+        googleplay = getCodesForFormat(GOOGLEPLAY)
+        disney = getCodesForFormat(DMA)
         self.render("digi.html", ultraviolet=ultraviolet, itunes=itunes, googleplay=googleplay, disney=disney, user=user, log_url=log_url)
 
 
@@ -79,24 +117,33 @@ class MyProfilePage(Handler):
         if user:
             log_url = users.create_logout_url('/')
 
-            colors = ["green", "red", "blue", "yellow", "purple"]
-            selling = ["Whiplash", "The Dark Knight", "Inception", "Gone Girl", "Se7en", "Moonlight"]
+            selling = getCodesForSeller(user.user_id())
             self.render("myprofile.html", color=random.choice(colors), selling=selling, user=user, log_url=log_url)
 
 
 class PostCodePage(Handler):
     def get(self):
         user = users.get_current_user()
-        log_url = ""
-
-        if user:
-            log_url = users.create_logout_url('/')
-
-        else:
-            log_url = users.create_login_url('/')
+        log_url = log_url = users.create_logout_url('/')
 
         self.render("postcode.html", user=user, log_url=log_url)
 
+    def post(self):
+        user = users.get_current_user()
+        log_url = users.create_logout_url('/')
+
+        seller_id = user.user_id()
+
+        title = self.request.get("title")
+        price = float(self.request.get("price"))
+        code_format = int(self.request.get("format"))
+        movie_id = self.request.get("movie-id")
+        poster_url = self.request.get("poster-url");
+
+        addCode(seller_id, movie_id, price, code_format, title, poster_url)
+
+        # return to account page
+        self.render("myprofile.html", user=user, log_url=log_url, color=random.choice(colors))
 
 
 application = webapp2.WSGIApplication([

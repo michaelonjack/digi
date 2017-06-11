@@ -87,7 +87,7 @@ a.darken:hover .poster-title-container {
 }
 
 
-.searchbar {
+.focus-input-lg {
   padding: 10px;
   border: solid 1px #dcdcdc;
   width: 75%;
@@ -95,8 +95,8 @@ a.darken:hover .poster-title-container {
   transition: box-shadow 0.3s, border 0.3s;
 }
 
-.searchbar:focus,
-.searchbar.focus {
+.focus-input-lg:focus,
+.focus-input-lg.focus{
   border: solid 1px #707070;
   box-shadow: 0 0 5px 1px #969696;
 }
