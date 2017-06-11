@@ -44,7 +44,14 @@ body {
 
 #profile-picture {
 	width:20em;
-	height:20em;
+	height:auto;
+	display:inline-block;
+}
+
+.profile-sub-icon {
+	width:10em;
+	height:10em;
+	margin-top:4em;
 }
 
 a.darken {
@@ -68,5 +75,56 @@ a.darken:hover img.poster-med {
 
 a.darken:hover .poster-title-container {
     opacity:1;
+}
+
+.navbar-brand {
+  padding: 0px;
+}
+.navbar-brand>img {
+  height: 100%;
+  padding: 0px;
+  width: auto;
+}
+
+
+
+
+
+@-webkit-keyframes rotate {
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+    to { 
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+.spin:hover {
+    -webkit-animation-name: rotate; 
+    -webkit-animation-duration: 5.0s; 
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;
+}
+
+@-webkit-keyframes pulse {
+  25% {
+    -webkit-transform: scale(1.1);
+    transform: scale(1.1);
+  }
+  75% {
+    -webkit-transform: scale(0.9);
+    transform: scale(0.9);
+  }
+}
+
+.pulse:hover {
+  -webkit-animation-name: pulse;
+  animation-name: pulse;
+  -webkit-animation-duration: 1.0s;
+  animation-duration: 1.0s;
+  -webkit-animation-timing-function: linear;
+  animation-timing-function: linear;
+  -webkit-animation-iteration-count: infinite;
+  animation-iteration-count: infinite;
 }
 

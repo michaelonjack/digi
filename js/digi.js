@@ -21,18 +21,8 @@ function loadMoviePosters() {
 }
 
 
-function initAccountButton() {
-	console.log(jQuery('#account-button').html());
-	jQuery('#account-button').click( function() {
-		console.log('here');
-		window.location.replace("/profile");
-	});
-}
-
-
 jQuery(document).ready( function() {
 
 	loadMoviePosters();
-	initAccountButton();
 
 });

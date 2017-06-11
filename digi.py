@@ -3,7 +3,9 @@ import jinja2
 import webapp2
 import random
 from google.appengine.api import mail
+from google.appengine.api import users
 from auth import getMovieDBKey
+from google.appengine.ext import ndb
 
 template_dir = os.path.join(os.path.dirname(__file__),'html')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
@@ -26,21 +28,62 @@ class Handler(webapp2.RequestHandler):
 
 
 
+class User(ndb.Model):
+    userid = ndb.StringProperty()
+    username = ndb.StringProperty()
+    email = ndb.StringProperty()
+    reputation = ndb.IntegerProperty()
+    created = ndb.DateTimeProperty(auto_now_add=True)
+
+class Code(ndb.Model):
+    sellerid = ndb.StringProperty()
+    title = ndb.StringProperty()
+    price = ndb.FloatProperty()
+    codeformat = ndb.StringProperty()
+    created = ndb.DateTimeProperty(auto_now_add=True)
+
+class Review(ndb.Model):
+    buyerid = ndb.StringProperty()
+    sellerid = ndb.StringProperty()
+    comment = ndb.StringProperty()
+    rating = ndb.IntegerProperty()
+
+
+
+
+
 class MainPage(Handler):
     def get(self):
-        movies = ["Up", "Toy Story", "Beauty and the Beast", "Ratatouille", "Toy Story 3", "The Thing"]
-        self.render("digi.html", movies=movies)
+        user = users.get_current_user()
+        log_url = ""
+
+        if user:
+            log_url = users.create_logout_url('/')
+
+        else:
+            log_url = users.create_login_url('/')
+
+        ultraviolet = ["The Godfather", "Lord of the Rings", "Casino Royale", "La La Land", "Sicario", "The Thing"]
+        itunes = ["Whiplash", "The Dark Knight", "Inception", "Gone Girl", "Se7en", "Moonlight"]
+        googleplay = ["Shark Tale", "Shrek", "Madagascar", "Antz", "Kung Fu Panda", "Shrek 2"]
+        disney = ["Up", "Toy Story", "Beauty and the Beast", "Ratatouille", "Toy Story 3", "Bambi"]
+        self.render("digi.html", ultraviolet=ultraviolet, itunes=itunes, googleplay=googleplay, disney=disney, user=user, log_url=log_url)
 
 
-
-class ProfilePage(Handler):
+class MyProfilePage(Handler):
     def get(self):
-        colors = ["green", "red", "blue"]
-        selling = ["Moana", "Frozen", "Finding Nemo", "Finding Dory", "Monsters University", "Lego Batman", "Whiplash", "La la land"]
-        self.render("profile.html", color=random.choice(colors), selling=selling)
+        user = users.get_current_user()
+        log_url = ""
+
+        if user:
+            log_url = users.create_logout_url('/')
+
+            colors = ["green", "red", "blue", "yellow", "purple"]
+            selling = ["Whiplash", "The Dark Knight", "Inception", "Gone Girl", "Se7en", "Moonlight"]
+            self.render("self-profile.html", color=random.choice(colors), selling=selling, user=user, log_url=log_url)
 
 
 application = webapp2.WSGIApplication([
     ('/', MainPage),
-    ('/profile', ProfilePage)
+    ('/myprofile', MyProfilePage)
 ], debug=True)

@@ -13,6 +13,9 @@ handlers:
   static_dir: css
 - url: /images
   static_dir: images
+- url: /myprofile
+  script: digi.application
+  login: required
 - url: /.*
   script: digi.application
 
