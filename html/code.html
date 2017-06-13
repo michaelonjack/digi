@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<title>
-		profile
+		kodala
 	</title>
 
 	<meta charset="utf-8">
@@ -63,56 +63,83 @@
 	</div>
 </nav>
 
-<body>
+<body style="padding-top:0" movieid="{{code.movieid}}">
 	<div class="container-fluid">
-		<div class="row" style="margin-top:1em; margin-bottom:1em;">
-			<div class="col-xs-3 col-md-3 text-center">
-				<a href="">
-					<img class="profile-sub-icon img-responsive spin" src="/images/settings.png" style="float:right;">
-				</a>
+		<div class="row backdrop-container text-center" style="background-image: url(https://image.tmdb.org/t/p/w1280{{code.backdropurl}});">
+			<!--
+			<div class="col-xs-12 col-md-4 text-center">
+				<img src="https://image.tmdb.org/t/p/w342/{{code.posterurl}}" class="img-responsive code-poster">
 			</div>
-			<div id="profile-picture-container" class="col-xs-6 col-md-6 text-center">
-				<img id="profile-picture" src="/images/koala-{{color}}.png" class="img-circle img-responsive">
-			</div>
-			<div class="col-xs-3 col-md-3 text-center">
-				<a href="/entercode">
-					<img class="profile-sub-icon img-responsive pulse" src="/images/sell.png" style="float:left;">
-				</a>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-xs-12 col-md-12 text-center">
-				<span style="font-size:2em;">{{user.username}}</span>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-xs-12 col-md-12 text-center">
-				<span style="font-size:2em;">{{user.reputation}}</span>
-				<img src="/images/star.png" class="img-responsive" style="display:inline-block;">
-			</div>
-		</div>
-		<div class="row" style="margin-top:2em;">
-			<div class="col-xs-12 col-md-12 text-center">
-				<span style="font-size:3em;">selling</span>
-			</div>
-		</div>
-		<div class="row row-horizon poster-row text-center" style="margin-bottom:3em;">
-			{% for movie in selling %}
-			<div class="col-xs-6 col-md-3 text-center">
-				<div class="poster-container">
-					<a href="/code?id={{movie.key.id()}}" class="darken">
-				      	<img src="https://image.tmdb.org/t/p/w342/{{movie.posterurl}}" class="img-responsive poster-med" movie-title="{{movie.title}}">
-						<div class="poster-title-container">
-							<div class="poster-title">
-						    	{{movie.title}}
-						    </div>
-						</div>
-				    </a>
+			<div class="hidden-xs col-md-8 text-center">
+				<div class="row">
+					<div class="col-xs-12 col-md-12">
+						<span id="code-title"></span>
+					</div>
 				</div>
 			</div>
-			{% endfor %}
+			-->
 		</div>
-	</div>
+		<div class="row code-poster-container text-center">
+			<div class="col-xs-12 col-md-12 text-center">
+				<center>
+					<img src="https://image.tmdb.org/t/p/w342/{{code.posterurl}}" class="img-responsive code-poster">
+				</center>
+			</div>
+		</div>
+		<div class="row details-container">
+			<div class="col-xs-12 col-md-12">
+				<div class="row text-center" id="details-title">
+					<div class="col-xs-12 col-md-12">
+						<span>{{code.title}}</span>
+					</div>
+				</div>
+				<div class="row text-center" id="details-subtitle">
+					<div class="col-xs-3 col-md-5"></div>
+					<div class="col-xs-3 col-md-1 text-center">
+						<span>${{code.price}}</span>
+					</div>
+					<div class="col-xs-3 col-md-1 text-center">
+						{% if code.codeformat == 1 %}
+						<img alt="ultraviolet code" src="/images/ultraviolet.png">
+						{% elif code.codeformat == 2 %}
+						<img alt="itunes code" src="/images/itunes.png">
+						{% elif code.codeformat == 3 %}
+						<img alt="google play code" src="/images/google-play.png">
+						{% else %}
+						<img alt="disney movies anywhere code" src="/images/dma.png">
+						{% endif %}
+					</div>
+					<div class="col-xs-3 col-md-5"></div>
+				</div>
+				<div class="row" id="details-overview">
+					<div class="col-xs-12 col-md-6">
+						<div class="row">
+							<div class="col-xs-12 col-md-12">
+								<span>Synopsis</span><br>
+								<span id="details-synopsis"></span>
+							</div>
+						</div>
+					</div>
+					<div class="hidden-xs col-md-6">
+						<div class="row">
+							<div class="col-md-12 text-center">
+								<iframe id="details-trailer" width="450" height="315" src=""></iframe>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<form id="buy-button" method="post">
+			<div class="row">
+				<div class="col-xs-2 col-md-2"></div>
+				<div class="col-xs-8 col-md-8">
+					<button type="submit" style="width:100%" class="btn btn-primary">buy</button>
+				</div>
+				<div class="col-xs-2 col-md-2"></div>
+			</div>
+		</form>
+	</div>	
 </body>
 
 </html>

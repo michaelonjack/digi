@@ -27,6 +27,7 @@ function setSelectedMovie() {
 
 		jQuery('#form-movie-id').val(poster.attr('movie-id'));
 		jQuery('#form-poster-url').val(poster.attr('poster-url'));
+		jQuery('#form-backdrop-url').val(poster.attr('backdrop-url'));
 		jQuery('#form-movie-title').val(poster.attr('movie-title'));
 
 		jQuery('#form-row').show();
@@ -53,6 +54,7 @@ function initSearchbar() {
 								jQuery(this).attr('movie-title', result.title);
 								jQuery(this).attr('movie-id', result.id);
 								jQuery(this).attr('poster-url', result.poster_path);
+								jQuery(this).attr('backdrop-url', result.backdrop_path);
 								jQuery(this).siblings().find('.poster-title').text(result.title);
 								jQuery(this).attr('src', 'https://image.tmdb.org/t/p/w500/' + result.poster_path);
 							} else { 
@@ -72,10 +74,42 @@ function initSearchbar() {
 
 
 
+function setCodeDetails() { 
+	if (jQuery("#details-trailer").length > 0) { 
+		jQuery("#details-trailer").hide();
+
+		var movieid = jQuery("body").attr("movieid");
+		var video_base_url = "https://www.youtube.com/embed/";
+		var video_endpoint = "https://api.themoviedb.org/3/movie/" + movieid + "/videos?api_key=f8bacc22524d435a1476adae350b4d41&language=en-US";
+		var movie_endpoint = "https://api.themoviedb.org/3/movie/" + movieid + "?api_key=f8bacc22524d435a1476adae350b4d41&language=en-US";
+	
+		jQuery.getJSON(video_endpoint, function(json) { 
+
+			if (json.results.length > 0) {
+				var video_key = json.results[0].key;
+				jQuery('#details-trailer').attr('src', video_base_url + video_key);
+				
+				jQuery('#details-trailer').show();
+			}
+		});
+
+		jQuery.getJSON(movie_endpoint, function(json) { 
+			console.log(json);
+			if (json) {
+				var overview = json.overview;
+				
+				jQuery('#details-synopsis').text(overview);
+			}
+		});
+	}
+}
+
+
+
 jQuery(document).ready( function() {
 
-	//loadMoviePosters();
 	initSearchbar();
 	setSelectedMovie();
+	setCodeDetails();
 
 });

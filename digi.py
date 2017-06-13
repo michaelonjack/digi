@@ -61,6 +61,7 @@ class Code(ndb.Model):
     codeformat = ndb.IntegerProperty()
     title = ndb.StringProperty()
     posterurl = ndb.StringProperty()
+    backdropurl = ndb.StringProperty()
     purchased = ndb.DateTimeProperty()
     created = ndb.DateTimeProperty(auto_now_add=True)
 
@@ -71,8 +72,23 @@ class Review(ndb.Model):
     rating = ndb.IntegerProperty()
 
 
-def addCode(seller_id, movie_id, price, code_format, title, poster_url):
-    newCode = Code(sellerid=seller_id, movieid=movie_id, price=price, codeformat=code_format, title=title, posterurl=poster_url)
+def getUser(user):
+    matchedUser = User.query(User.userid == user.user_id()).fetch(1)
+
+    # No user found, add the user to the database
+    if len(matchedUser) == 0:
+        newUser = User(userid=user.user_id(), username=user.nickname(), email=user.email(), reputation=0)
+        newUser.put()
+        return newUser
+
+    return matchedUser[0]
+
+def getCode(id):
+    return Code.get_by_id(id)
+
+
+def addCode(seller_id, movie_id, price, code_format, title, poster_url, backdrop_url):
+    newCode = Code(sellerid=seller_id, movieid=movie_id, price=price, codeformat=code_format, title=title, posterurl=poster_url, backdropurl=backdrop_url, purchased=None)
     key = newCode.put()
 
 def getCodesForFormat(_format):
@@ -111,13 +127,12 @@ class MainPage(Handler):
 
 class MyProfilePage(Handler):
     def get(self):
-        user = users.get_current_user()
-        log_url = ""
+        user = getUser(users.get_current_user())
 
         if user:
             log_url = users.create_logout_url('/')
 
-            selling = getCodesForSeller(user.user_id())
+            selling = getCodesForSeller(user.userid)
             self.render("myprofile.html", color=random.choice(colors), selling=selling, user=user, log_url=log_url)
 
 
@@ -139,15 +154,33 @@ class PostCodePage(Handler):
         code_format = int(self.request.get("format"))
         movie_id = self.request.get("movie-id")
         poster_url = self.request.get("poster-url");
+        backdrop_url = self.request.get("backdrop-url");
 
-        addCode(seller_id, movie_id, price, code_format, title, poster_url)
+        addCode(seller_id, movie_id, price, code_format, title, poster_url, backdrop_url)
 
         # return to account page
-        self.render("myprofile.html", user=user, log_url=log_url, color=random.choice(colors))
+        selling = getCodesForSeller(user.user_id())
+        self.redirect("/myprofile")
 
+
+class CodePage(Handler):
+    def get(self):
+        codeid = int(self.request.get("id"))
+        code = getCode(codeid)
+        user = users.get_current_user()
+        log_url = ""
+
+        if user:
+            log_url = users.create_logout_url('/')
+
+        else:
+            log_url = users.create_login_url('/')
+
+        self.render("code.html", code=code, user=user, log_url=log_url)
 
 application = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/myprofile', MyProfilePage),
-    ('/entercode', PostCodePage)
+    ('/entercode', PostCodePage),
+    (r'/code.*', CodePage)
 ], debug=True)
