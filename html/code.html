@@ -11,6 +11,12 @@
 	<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
 	<link rel="stylesheet" type="text/css" href="/css/bootstrap-horizon.css">
 	<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Lato:100,300,400">
+	<link rel="apple-touch-icon" sizes="180x180" href="/images/favicons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/images/favicons/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/images/favicons/favicon-16x16.png">
+	<link rel="manifest" href="/images/favicons/manifest.json">
+	<link rel="mask-icon" href="/images/favicons/safari-pinned-tab.svg" color="#5bbad5">
+	<meta name="theme-color" content="#ffffff">
 	<script type="text/javascript" src="/js/jquery-3.1.1.min.js"></script>
 	<script type="text/javascript" src="/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="/js/digi.js"></script>
@@ -96,17 +102,17 @@
 				<div class="row text-center" id="details-subtitle">
 					<div class="col-xs-3 col-md-5"></div>
 					<div class="col-xs-3 col-md-1 text-center">
-						<span>${{code.price}}</span>
+						<span>${{ "{0:0.2f}".format(code.price) }}</span>
 					</div>
 					<div class="col-xs-3 col-md-1 text-center">
 						{% if code.codeformat == 1 %}
-						<img alt="ultraviolet code" src="/images/ultraviolet.png">
+						<img width="50px" height="50px" alt="ultraviolet code" src="/images/ultraviolet.png">
 						{% elif code.codeformat == 2 %}
-						<img alt="itunes code" src="/images/itunes.png">
+						<img width="50px" height="50px" alt="itunes code" src="/images/itunes.png">
 						{% elif code.codeformat == 3 %}
-						<img alt="google play code" src="/images/google-play.png">
+						<img width="50px" height="50px" alt="google play code" src="/images/google-play.png">
 						{% else %}
-						<img alt="disney movies anywhere code" src="/images/dma.png">
+						<img width="50px" height="50px" alt="disney movies anywhere code" src="/images/dma.png">
 						{% endif %}
 					</div>
 					<div class="col-xs-3 col-md-5"></div>
@@ -115,15 +121,45 @@
 					<div class="col-xs-12 col-md-6">
 						<div class="row">
 							<div class="col-xs-12 col-md-12">
-								<span>Synopsis</span><br>
-								<span id="details-synopsis"></span>
+								<span style="font-weight:300">Synopsis</span><br>
+								<div id="details-synopsis"></div>
 							</div>
+						</div>
+						<div class="row" style="margin-top:0.5em">
+							<div class="col-xs-12 col-md-12">
+								<span style="font-weight:300">Runtime</span><br>
+								<div id="details-runtime"></div>
+							</div>
+						</div>
+						<div class="row" style="margin-top:0.5em;">
+							<div class="col-xs-12 col-md-12">
+								<span style="font-weight:300">Release Date</span><br>
+								<div id="details-release"></div>
+							</div>
+						</div>
+						<div class="row" style="margin-top:1.5em;">
+							<div class="col-xs-2 col-md-2">
+								<a id="rotten-link" href="">
+									<img width="50px" height="50px" src="/images/rotten-tomatoes.png">
+								</a>
+							</div>
+							<div class="col-xs-2 col-md-2">
+								<a href="https://www.themoviedb.org/movie/{{code.movieid}}">
+									<img width="50px" height="50px" src="/images/tmdb.png">
+								</a>
+							</div>
+							<div class="col-xs-2 col-md-2">
+								<a id="imdb-link" href="">
+									<img width="50px" height="50px" src="/images/imdb.png">
+								</a>
+							</div>
+							<div class="col-xs-6 col-md-6"></div>
 						</div>
 					</div>
 					<div class="hidden-xs col-md-6">
 						<div class="row">
 							<div class="col-md-12 text-center">
-								<iframe id="details-trailer" width="450" height="315" src=""></iframe>
+								<iframe id="details-trailer" width="450" height="315" src="" frameborder="0"></iframe>
 							</div>
 						</div>
 					</div>

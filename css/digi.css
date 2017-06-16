@@ -143,9 +143,10 @@ a.darken:hover .poster-title-container {
 	margin-top:1em;
 }
 
-#details-synopsis { 
+#details-synopsis, #details-runtime, #details-release { 
 	font-size: 0.5em;
-	font-weight: normal;
+	font-family: 'Lato', sans-serif;
+	font-weight:300;
 }
 
 #buy-button { 

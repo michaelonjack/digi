@@ -80,6 +80,9 @@ function setCodeDetails() {
 
 		var movieid = jQuery("body").attr("movieid");
 		var video_base_url = "https://www.youtube.com/embed/";
+		var video_options = "?modestbranding=1&autohide=1&showinfo=0&controls=0";
+		var imdb_base_url = "https://www.imdb.com/title/";
+		var rotten_base_url = "https://www.rottentomatoes.com/m/";
 		var video_endpoint = "https://api.themoviedb.org/3/movie/" + movieid + "/videos?api_key=f8bacc22524d435a1476adae350b4d41&language=en-US";
 		var movie_endpoint = "https://api.themoviedb.org/3/movie/" + movieid + "?api_key=f8bacc22524d435a1476adae350b4d41&language=en-US";
 	
@@ -87,7 +90,7 @@ function setCodeDetails() {
 
 			if (json.results.length > 0) {
 				var video_key = json.results[0].key;
-				jQuery('#details-trailer').attr('src', video_base_url + video_key);
+				jQuery('#details-trailer').attr('src', video_base_url + video_key + video_options);
 				
 				jQuery('#details-trailer').show();
 			}
@@ -96,9 +99,11 @@ function setCodeDetails() {
 		jQuery.getJSON(movie_endpoint, function(json) { 
 			console.log(json);
 			if (json) {
-				var overview = json.overview;
-				
-				jQuery('#details-synopsis').text(overview);
+				jQuery('#details-synopsis').text(json.overview);
+				jQuery('#details-runtime').text(json.runtime + " minutes");
+				jQuery('#details-release').text(new Date(json.release_date).toDateString());
+				jQuery('#imdb-link').attr('href', imdb_base_url + json.imdb_id);
+				jQuery('#rotten-link').attr('href', rotten_base_url + json.title.replace(/[ ·-]/g, "_").replace(/[:'.,]/g, ""));
 			}
 		});
 	}
