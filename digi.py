@@ -72,16 +72,19 @@ class Review(ndb.Model):
     rating = ndb.IntegerProperty()
 
 
-def getUser(user):
-    matchedUser = User.query(User.userid == user.user_id()).fetch(1)
+def getUser(userid):
+    matchedUser = User.query(User.userid == userid).fetch(1)
 
-    # No user found, add the user to the database
-    if len(matchedUser) == 0:
-        newUser = User(userid=user.user_id(), username=user.nickname(), email=user.email(), reputation=0)
-        newUser.put()
-        return newUser
+    # No user found
+    if len(matchedUser) == 0 and createOnNone:
+        return None
 
     return matchedUser[0]
+
+def addUser(user):
+    newUser = User(userid=user.user_id(), username=user.nickname(), email=user.email(), reputation=0)
+    newUser.put()
+    return newUser
 
 def getCode(id):
     return Code.get_by_id(id)
@@ -122,18 +125,50 @@ class MainPage(Handler):
         itunes = getCodesForFormat(ITUNES)
         googleplay = getCodesForFormat(GOOGLEPLAY)
         disney = getCodesForFormat(DMA)
-        self.render("digi.html", ultraviolet=ultraviolet, itunes=itunes, googleplay=googleplay, disney=disney, user=user, log_url=log_url)
+        self.render("digi.html", 
+                    ultraviolet=ultraviolet, 
+                    itunes=itunes, 
+                    googleplay=googleplay, 
+                    disney=disney, 
+                    user=user, 
+                    log_url=log_url)
 
 
 class MyProfilePage(Handler):
     def get(self):
-        user = getUser(users.get_current_user())
+        user = getUser(users.get_current_user().user_id())
+        if user is None:
+            user = addUser(users.get_current_user())
+        
+        log_url = users.create_logout_url('/')
 
-        if user:
+        selling = getCodesForSeller(user.userid)
+        self.render("myprofile.html", 
+                    color=random.choice(colors), 
+                    selling=selling, 
+                    user=user, 
+                    log_url=log_url)
+
+
+class OtherProfilePage(Handler):
+    def get(self):
+        otheruserid = self.request.get("id")
+        otheruser = getUser(otheruserid)
+        currentuser = getUser(users.get_current_user().user_id())
+
+        if currentuser:
             log_url = users.create_logout_url('/')
 
-            selling = getCodesForSeller(user.userid)
-            self.render("myprofile.html", color=random.choice(colors), selling=selling, user=user, log_url=log_url)
+        else:
+            log_url = users.create_login_url('/')
+
+        selling = getCodesForSeller(otheruser.userid)
+        self.render("otherprofile.html",
+                    color=random.choice(colors), 
+                    selling=selling, 
+                    currentuser=currentuser, 
+                    otheruser=otheruser, 
+                    log_url=log_url)
 
 
 class PostCodePage(Handler):
@@ -141,7 +176,9 @@ class PostCodePage(Handler):
         user = users.get_current_user()
         log_url = log_url = users.create_logout_url('/')
 
-        self.render("postcode.html", user=user, log_url=log_url)
+        self.render("postcode.html", 
+                    user=user, 
+                    log_url=log_url)
 
     def post(self):
         user = users.get_current_user()
@@ -168,6 +205,7 @@ class CodePage(Handler):
         codeid = int(self.request.get("id"))
         code = getCode(codeid)
         user = users.get_current_user()
+        seller = getUser(code.sellerid)
         log_url = ""
 
         if user:
@@ -176,11 +214,47 @@ class CodePage(Handler):
         else:
             log_url = users.create_login_url('/')
 
-        self.render("code.html", code=code, user=user, log_url=log_url)
+        self.render("code.html", 
+                    code=code, 
+                    seller=seller, 
+                    user=user, 
+                    log_url=log_url)
+
+
+class MessagePage(Handler):
+    def get(self):
+        recipientid = self.request.get("recipient")
+        recipient = getUser(recipientid)
+        currentuser = getUser(users.get_current_user().user_id())
+        log_url = ""
+
+        if currentuser:
+            log_url = users.create_logout_url('/')
+
+        else:
+            log_url = users.create_login_url('/')
+
+        self.render("sendmessage.html", currentuser=currentuser, recipient=recipient, log_url=log_url)
+
+    def post(self):
+        recipientid = self.request.get("recipientid")
+        recipient = getUser(recipientid)
+        subject = self.request.get("subject")
+        message = self.request.get("message")
+        currentuser = getUser(users.get_current_user().user_id())
+
+        mail.send_mail(sender=currentuser.email,
+                        to=recipient.email,
+                        subject=subject,
+                        body=message)
+
+        self.redirect('/profile?id=' + recipient.userid)
 
 application = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/myprofile', MyProfilePage),
+    (r'/profile.*', OtherProfilePage),
     ('/entercode', PostCodePage),
+    (r'/message.*', MessagePage),
     (r'/code.*', CodePage)
 ], debug=True)

@@ -70,6 +70,31 @@ function initSearchbar() {
 			}
 		});
 	}
+
+	if(jQuery('#movie-search').length > 0) {
+		var request = null;
+		jQuery('#movie-search').keyup(function() { 
+			var query = jQuery('#movie-search').val();
+			var endpoint = 'https://api.themoviedb.org/3/search/movie?api_key=f8bacc22524d435a1476adae350b4d41&query=' + query;
+
+			var searchResults = [];
+			jQuery('#movie-search').autocomplete({source: searchResults});
+			if (query.length > 2) {
+				// If a previous request is in progress when a new request is made, abort the previous request
+				if (request != null) { 
+					request.abort();
+				}
+
+				request = jQuery.getJSON(endpoint, function(json) { 
+					for (var i=0; i<10; i++) { 
+						var result = json.results[i].title;
+						searchResults.push(result);
+					}
+					jQuery('#movie-search').autocomplete({source: searchResults});
+				});
+			} 
+		});
+	}
 }
 
 
@@ -103,7 +128,7 @@ function setCodeDetails() {
 				jQuery('#details-runtime').text(json.runtime + " minutes");
 				jQuery('#details-release').text(new Date(json.release_date).toDateString());
 				jQuery('#imdb-link').attr('href', imdb_base_url + json.imdb_id);
-				jQuery('#rotten-link').attr('href', rotten_base_url + json.title.replace(/[ ·-]/g, "_").replace(/[:'.,]/g, ""));
+				jQuery('#rotten-link').attr('href', rotten_base_url + json.title.replace(/[ ·-]/g, "_").replace(/[:'.,!?]/g, ""));
 			}
 		});
 	}
@@ -116,5 +141,14 @@ jQuery(document).ready( function() {
 	initSearchbar();
 	setSelectedMovie();
 	setCodeDetails();
+
+	jQuery("#messageform").validate({
+	    submitHandler: function (form) {
+	        $("#confirmModal").modal('show');
+	        $('#sendBtn').click(function () {
+	            form.submit();
+	       });
+	    }
+	});
 
 });

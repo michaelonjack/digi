@@ -143,7 +143,13 @@ a.darken:hover .poster-title-container {
 	margin-top:1em;
 }
 
-#details-synopsis, #details-runtime, #details-release { 
+ @media(max-width:980px){
+  	#details-trailer {
+    	padding-top: 5.5em;
+  	}
+}
+
+#details-synopsis, #details-runtime, #details-release, #details-seller { 
 	font-size: 0.5em;
 	font-family: 'Lato', sans-serif;
 	font-weight:300;

@@ -19,6 +19,9 @@ handlers:
 - url: /entercode
   script: digi.application
   login: required
+- url: /message.*
+  script: digi.application
+  login: required
 - url: /.*
   script: digi.application
   secure: always
