@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<title>
-		profile
+		kodala
 	</title>
 
 	<meta charset="utf-8">
@@ -73,55 +73,67 @@
 </nav>
 
 <body>
-	<div class="container-fluid">
-		<div class="row" style="margin-top:1em; margin-bottom:1em;">
-			<div class="col-xs-3 col-md-3 text-center">
-				<a href="/settings">
-					<img class="profile-sub-icon img-responsive spin" src="/images/settings.png" style="float:right;">
-				</a>
-			</div>
-			<div id="profile-picture-container" class="col-xs-6 col-md-6 text-center">
-				<img id="profile-picture" src="/images/koala-{{color}}.png" class="img-circle img-responsive">
-			</div>
-			<div class="col-xs-3 col-md-3 text-center">
-				<a href="/entercode">
-					<img class="profile-sub-icon img-responsive pulse" src="/images/sell.png" style="float:left;">
-				</a>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-xs-12 col-md-12 text-center">
-				<span style="font-size:2em;">{{user.username}}</span>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-xs-12 col-md-12 text-center">
-				<span style="font-size:2em;">{{user.reputation}}</span>
-				<img src="/images/star.png" class="img-responsive" style="display:inline-block;">
-			</div>
-		</div>
-		<div class="row" style="margin-top:2em;">
-			<div class="col-xs-12 col-md-12 text-center">
-				<span style="font-size:3em;">selling</span>
-			</div>
-		</div>
-		<div class="row row-horizon poster-row text-center" style="margin-bottom:3em;">
-			{% for movie in selling %}
-			<div class="col-xs-6 col-md-3 text-center">
-				<div class="poster-container">
-					<a href="/code?id={{movie.key.id()}}" class="darken">
-				      	<img src="https://image.tmdb.org/t/p/w342/{{movie.posterurl}}" class="img-responsive poster-med" movie-title="{{movie.title}}">
-						<div class="poster-title-container">
-							<div class="poster-title">
-						    	{{movie.title}}<br>${{ "{0:0.2f}".format(movie.price) }}
-						    </div>
-						</div>
-				    </a>
+
+	<section id="title">
+		<div class="container-fluid">
+			<div class="row" style="margin-bottom:4em;">
+				<div class="col-xs-12 col-md-12 text-center">
+					<span style="font-size:3em;">Search Results for "{{query}}"</span>
 				</div>
 			</div>
-			{% endfor %}
+		</div>
+	</section>
+
+	<section>
+		<div class="container-fluid">
+			<div class="row text-center">
+				{% for code in codes %}
+					<div class="col-xs-6 col-md-3 text-center">
+						<div class="poster-container">
+							<a href="/code?id={{code.key.id()}}" class="darken">
+						      	<img src="https://image.tmdb.org/t/p/w342/{{code.posterurl}}" class="img-responsive poster-med" movie-title="{{code.title}}">
+								<div class="poster-title-container">
+									<div class="poster-title">
+								    	{{code.title}}<br>${{ "{0:0.2f}".format(code.price) }}
+								    </div>
+								</div>
+						    </a>
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+	</section>
+</body>
+
+<footer style="margin-top:2em;">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-xs-12 col-md-12 text-center">
+				<nav aria-label="Page navigation">
+				 	<ul class="pagination">
+				    	<li>
+					      	<a href="#" aria-label="Previous">
+					        	<span aria-hidden="true">&laquo;</span>
+					      	</a>
+				    	</li>
+				    	{% for i in range(1, numpages+1) %}
+				    		{% if i == currpage %}
+				    			<li class="active"><a href="#">{{i}}</a></li>
+				    		{% else %}
+				    			<li><a href="/search?q={{query}}&page={{i}}">{{i}}</a></li>
+				    		{% endif %}
+				    	{% endfor %}
+				    	<li>
+					      	<a href="#" aria-label="Next">
+					        	<span aria-hidden="true">&raquo;</span>
+					      	</a>
+				    	</li>
+				  	</ul>
+				</nav>
+			</div>
 		</div>
 	</div>
-</body>
+</footer>
 
 </html>

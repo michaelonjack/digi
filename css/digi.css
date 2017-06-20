@@ -3,6 +3,11 @@ span {
 	font-weight:lighter;
 }
 
+th {
+	font-family: 'Lato', sans-serif;
+	font-weight:300;
+}
+
 body {
 	padding-top: 70px;
 }
@@ -10,6 +15,11 @@ body {
 .code-poster {
 	height:21.7em;
 	width:14.56em; 
+}
+
+.poster-sm {
+	height:24.75em;
+	width:15.6em;
 }
 
 .poster-med {
@@ -74,7 +84,21 @@ a.darken img.poster-med {
     transition: all 0.5s linear;
 }
 
+a.darken img.poster-sm {
+    display: block;
+    
+    -webkit-transition: all 0.5s linear;
+    -moz-transition: all 0.5s linear;
+    -ms-transition: all 0.5s linear;
+    -o-transition: all 0.5s linear;
+    transition: all 0.5s linear;
+}
+
 a.darken:hover img.poster-med {
+    opacity: 0.5;          
+}
+
+a.darken:hover img.poster-sm {
     opacity: 0.5;          
 }
 
@@ -155,7 +179,7 @@ a.darken:hover .poster-title-container {
 	font-weight:300;
 }
 
-#buy-button { 
+#action-button { 
 	margin-top: 4em;
 	margin-bottom: 3em;
 }

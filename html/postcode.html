@@ -20,6 +20,7 @@
 	<meta name="theme-color" content="#ffffff">
 	<script type="text/javascript" src="/js/jquery-3.1.1.min.js"></script>
 	<script type="text/javascript" src="/js/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="/js/jquery.throttle-debounce.min.js"></script>
 	<script type="text/javascript" src="/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="/js/digi.js"></script>
 </head>
@@ -38,20 +39,13 @@
 	    </div>
 		<div class="collapse navbar-collapse" id="myNavbar">
 			<ul class="nav navbar-nav">
-				<li><a href="#">UltraViolet</a></li>
-				<li><a href="#">iTunes</a></li>
-				<li><a href="#">Google Play</a></li>
-				<li><a href="#">DMA</a></li>
+				<li><a href="/allcodes?format=1&page=1">UltraViolet</a></li>
+				<li><a href="/allcodes?format=2&page=1">iTunes</a></li>
+				<li><a href="/allcodes?format=3&page=1">Google Play</a></li>
+				<li><a href="/allcodes?format=4&page=1">DMA</a></li>
 			</ul>
 
 			<ul class="nav navbar-nav navbar-right" style="margin-right:1em;">
-				<li>
-					<form class="navbar-form form-inline" role="form">
-			        	<div class="form-group">
-			          		<input id="movie-search" type="text" class="form-control" placeholder="Search">
-			        	</div>
-			      	</form>
-			    </li>
 			    <li>
 			      	{% if user %}
 			        <button onclick="window.location.href='/myprofile'" class="btn navbar-btn">

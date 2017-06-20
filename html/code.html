@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<title>
-		kodala
+		kodala - {{code.title}}
 	</title>
 
 	<meta charset="utf-8">
@@ -20,7 +20,9 @@
 	<link rel="mask-icon" href="/images/favicons/safari-pinned-tab.svg" color="#5bbad5">
 	<meta name="theme-color" content="#ffffff">
 	<script type="text/javascript" src="/js/jquery-3.1.1.min.js"></script>
+	<script type="text/javascript" src="/js/jquery.validate.min.js"></script>
 	<script type="text/javascript" src="/js/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="/js/jquery.throttle-debounce.min.js"></script>
 	<script type="text/javascript" src="/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="/js/digi.js"></script>
 </head>
@@ -39,20 +41,13 @@
 	    </div>
 		<div class="collapse navbar-collapse" id="myNavbar">
 			<ul class="nav navbar-nav">
-				<li><a href="#">UltraViolet</a></li>
-				<li><a href="#">iTunes</a></li>
-				<li><a href="#">Google Play</a></li>
-				<li><a href="#">DMA</a></li>
+				<li><a href="/allcodes?format=1&page=1">UltraViolet</a></li>
+				<li><a href="/allcodes?format=2&page=1">iTunes</a></li>
+				<li><a href="/allcodes?format=3&page=1">Google Play</a></li>
+				<li><a href="/allcodes?format=4&page=1">DMA</a></li>
 			</ul>
 
 			<ul class="nav navbar-nav navbar-right" style="margin-right:1em;">
-				<li>
-					<form class="navbar-form form-inline" role="form">
-			        	<div class="form-group">
-			          		<input id="movie-search" type="text" class="form-control" placeholder="Search">
-			        	</div>
-			      	</form>
-			    </li>
 			    <li>
 			      	{% if user %}
 			        <button onclick="window.location.href='/myprofile'" class="btn navbar-btn">
@@ -181,17 +176,74 @@
 		</div>
 		<div class="row">
 			<div class="col-xs-12 col-md-12 text-center">
-				<form id="buy-button" method="post">
-					<div class="form-group text-center">
-						<button type="submit" class="btn button button--itzel button--size-l button--border-thin" style="display:inline-block; height:4em;">
-							<i class="button__icon icon icon-cart"></i>
-							<span style="font-weight:300;">Buy</span>
-						</button>
-					</div>
+				<form id="action-button" method="post">
+					{% if user and seller.userid == user.user_id() %}
+						<div class="form-group text-center">
+							<button type="submit" class="btn button button--itzel button--size-l button--border-thin" style="display:inline-block; height:4em;">
+								<i class="button__icon icon icon-trash"></i>
+								<span style="font-weight:300;">Remove</span>
+							</button>
+						</div>
+					{% else %}
+						{% if user %}
+							<div class="form-group text-center">
+								<button type="submit" class="btn button button--itzel button--size-l button--border-thin" style="display:inline-block; height:4em;">
+									<i class="button__icon icon icon-cart"></i>
+									<span style="font-weight:300;">Buy</span>
+								</button>
+							</div>
+						{% else %}
+							<div class="form-group text-center">
+								<button type="button" onclick="location.href='/myprofile'" class="btn button button--itzel button--size-l button--border-thin" style="display:inline-block; height:4em;">
+									<i class="button__icon icon icon-user"></i>
+									<span style="font-weight:300;">Log In to Purchase</span>
+								</button>
+							</div>
+						{% endif %}
+					{% endif %}
+					<input type="hidden" name="codeid" value="{{code.key.id()}}">
 				</form>
 			</div>
 		</div>
 	</div>	
 </body>
+
+<div id="confirmModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="confirmHeading" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header text-center">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                {% if user and seller.userid == user.user_id() %}
+                	<h3 id="confirmHeading">Are you sure you want to remove this code?</h3>
+                {% else %}
+                	<h3 id="confirmHeading">Are you sure you want to purchase this code?</h3>
+                {% endif %}
+
+            </div>
+            <div class="modal-body text-left">
+            	{% if user and seller.userid == user.user_id() %}
+                	<p class="text-center">If you choose to delete your code for "{{code.title}}"" it will be permanently removed from the site.</p>
+                {% else %}
+                	<p>Here's how the buying process works:</p>
+                	<ol>
+                		<li>When you press the button, an email message is sent to the seller of this code</li>
+                		<li>The seller is informed that you would like to purchase this code and is instructed to reply to your request</li>
+                		<li>The seller will respond via email with their preferred method of payment (Paypal, Venmo, etc.)</li>
+                		<li>You pay the seller the requested amount and the seller should provide you the code!</li>
+                		<li>Leave feedback for the seller indicating a good/bad transaction by clicking the star icon on the seller's profile</li>
+                	</ol>
+                {% endif %}
+            </div>
+            <div class="modal-footer text-center">
+            	{% if user and seller.userid == user.user_id() %}
+                	<button class="btn btn-primary" id="sendBtn" style="width:45%; float:left;">Remove</button>
+                {% else %}
+                	<button class="btn btn-primary" id="sendBtn" style="width:45%; float:left;">Buy!</button>
+                {% endif %}
+                <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true" style="width:45%; float:right;">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 </html>

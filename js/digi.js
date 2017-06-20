@@ -73,26 +73,58 @@ function initSearchbar() {
 
 	if(jQuery('#movie-search').length > 0) {
 		var request = null;
-		jQuery('#movie-search').keyup(function() { 
+		jQuery('#movie-search').keyup(jQuery.debounce(0, function() { 
 			var query = jQuery('#movie-search').val();
-			var endpoint = 'https://api.themoviedb.org/3/search/movie?api_key=f8bacc22524d435a1476adae350b4d41&query=' + query;
+			var endpoint = '/ajaxcodesearch?q=' + query;
 
 			var searchResults = [];
 			jQuery('#movie-search').autocomplete({source: searchResults});
-			if (query.length > 2) {
+			if (query.length > 1) {
 				// If a previous request is in progress when a new request is made, abort the previous request
 				if (request != null) { 
 					request.abort();
 				}
 
-				request = jQuery.getJSON(endpoint, function(json) { 
-					for (var i=0; i<10; i++) { 
+				request = jQuery.getJSON(endpoint, function(json) {
+				
+					for (var i=0; i<10 && i<json.results.length; i++) { 
 						var result = json.results[i].title;
 						searchResults.push(result);
 					}
+				
 					jQuery('#movie-search').autocomplete({source: searchResults});
 				});
 			} 
+		}));
+	}
+}
+
+
+
+function validateMessageForm() { 
+	if (jQuery("#messageform").length) {
+		jQuery("#messageform").validate({
+		    submitHandler: function (form) {
+		        jQuery("#confirmModal").modal('show');
+		        jQuery('#sendBtn').click(function () {
+		            form.submit();
+		       });
+		    }
+		});
+	}
+}
+
+
+
+function validateCodeForm() { 
+	if (jQuery("#action-button").length) {
+		jQuery("#action-button").validate({
+		    submitHandler: function (form) {
+		        jQuery("#confirmModal").modal('show');
+		        jQuery('#sendBtn').click(function () {
+		            form.submit();
+		       });
+		    }
 		});
 	}
 }
@@ -122,7 +154,7 @@ function setCodeDetails() {
 		});
 
 		jQuery.getJSON(movie_endpoint, function(json) { 
-			console.log(json);
+			
 			if (json) {
 				jQuery('#details-synopsis').text(json.overview);
 				jQuery('#details-runtime').text(json.runtime + " minutes");
@@ -141,14 +173,7 @@ jQuery(document).ready( function() {
 	initSearchbar();
 	setSelectedMovie();
 	setCodeDetails();
-
-	jQuery("#messageform").validate({
-	    submitHandler: function (form) {
-	        $("#confirmModal").modal('show');
-	        $('#sendBtn').click(function () {
-	            form.submit();
-	       });
-	    }
-	});
+	validateMessageForm();
+	validateCodeForm();
 
 });

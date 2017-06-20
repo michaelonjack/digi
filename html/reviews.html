@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<title>
-		kodala - message
+		kodala - settings
 	</title>
 
 	<meta charset="utf-8">
@@ -49,7 +49,7 @@
 
 			<ul class="nav navbar-nav navbar-right" style="margin-right:1em;">
 			    <li>
-			      	{% if currentuser %}
+			      	{% if reviewer %}
 			        <button onclick="window.location.href='/myprofile'" class="btn navbar-btn">
 		    			<span class="glyphicon glyphicon-user" aria-hidden="true"></span>
 		    		</button>
@@ -68,52 +68,88 @@
 </nav>
 
 <body>
-	<div class="container-fluid" style="margin-top: 3em;">
-		<div class="row text-center">
-			<div class="col-xs-12 col-md-12 text-center">
-				<form method="post" id="messageform">
-					<div class="form-group">
-						<input type="text" name="recipient" class="form-control" placeholder="recipient" style="margin: 0 auto; width:75%" value="{{recipient.email}}" required readonly>
-					</div>
-					<div class="form-group">
-						<input type="text" name="subject" class="form-control" placeholder="subject" style="margin: 0 auto; width:75%" required>
-					</div>
-					<div class="form-group">
-						<textarea class="form-control" rows="5" name="message" placeholder="message" style="margin: 0 auto; width:75%" required></textarea>
-					</div>
-					<div class="form-group text-center">
-						<div class="col-xs-12 col-md-12 text-center">
-							<button type="submit" class="btn button button--itzel button--size-l button--border-thin" style="display:inline-block">
-								<i class="button__icon icon icon-envelope"></i>
-								<span style="font-weight:300;">Send Message</span>
-							</button>
+	<section>
+		<div class="container-fluid">
+			<div class="row" style="margin-bottom:4em;">
+				<div class="col-xs-12 col-md-12 text-center">
+					<span style="font-size:3em;">Reviews for {{reviewee.username}}</span>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	{% if reviewer and reviewer.userid != reviewee.userid%}
+	<section id="submit-rating-container" style="margin-bottom:3em;">
+		<div class="container-fluid">
+			<div class="row text-center">
+				<form method="post" id="reviewform">
+					<div class="col-xs-2 col-md-2">
+						<div class="form-group">
+							<select class="form-control" name="role" id="review-role" style="text-align: center; width:100%;" required>
+								<option value="" disabled selected>-Role-</option>
+								<option value="buyer">Buyer</option>
+								<option value="seller">Seller</option>
+							</select>
 						</div>
 					</div>
-					<input type="hidden" name="recipientid" value="{{recipient.userid}}" required>
+					<div class="col-xs-2 col-md-2">
+						<div class="form-group">
+							<select class="form-control" name="rating" id="review-rating" style="text-align: center;width:100%;" required>
+								<option value="" disabled selected>-Rating-</option>
+								<option value="1">1</option>
+								<option value="-1">-1</option>
+							</select>
+						</div>
+					</div>
+					<div class="col-xs-6 col-md-6">
+						<div class="form-group">
+							<input type="text" class="form-control" name="comment" placeholder="comment" style="width:100%">
+						</div>
+					</div>
+					<div class="col-xs-2 col-md-2">
+						<div class="form-group">
+							<button type="submit" class="btn btn-primary" style="width:100%">Submit</button>
+						</div>
+					</div>
+					<input type="hidden" name="reviewee" value="{{reviewee.userid}}" required>
 				</form>
 			</div>
 		</div>
-	</div>
+	</section>
+	{% endif %}
+
+	<section id="ratings-table-container" style="margin-bottom:2em;">
+		<div class="container-fluid">
+			<div class="row text-center">
+				<div class="col-xs-12 col-md-12 text-center">
+					<table class="table table-responsive table-hover" style="width:95%; margin:0 auto;">
+						<tr>
+							<th class="text-center">Seller</th>
+							<th class="text-center">Buyer</th>
+							<th class="text-center">Comment</th>
+							<th class="text-center">Rating</th>
+						</tr>
+						{% for review in reviews %}
+							<tr {% if review.rating > 0 %} class="success" {% else %} class="danger" {% endif %}>
+								<td class="text-center">
+									<a href="/profile?id={{review.sellerid}}">View</a>
+								</td>
+								<td class="text-center">
+									<a href="/profile?id={{review.buyerid}}">View</a>
+								</td>
+								<td class="text-center">
+									<span style="font-weight:300">{{review.comment}}</span>
+								</td>
+								<td class="text-center">
+									<span style="font-weight:300">{{review.rating}}</span>
+								</td>
+							</tr>
+						{% endfor %}
+					</table>
+				</div>
+			</div>
+		</div>
+	</section>
 </body>
-
-
-<div id="confirmModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="confirmHeading" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header text-center">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
-                <h3 id="confirmHeading">Send Message?</h3>
-
-            </div>
-            <div class="modal-body text-center">
-                <p>Your account's email will be used to directly send this message to {{recipient.email}}. Continue?</p>
-            </div>
-            <div class="modal-footer text-center">
-                <button class="btn btn-primary" id="sendBtn" style="width:45%; float:left;">Send!</button>
-                <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true" style="width:45%; float:right;">Cancel</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 </html>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<title>
-		profile
+		kodala - settings
 	</title>
 
 	<meta charset="utf-8">
@@ -10,7 +10,8 @@
 	<link rel="stylesheet" type="text/css" href="/css/digi.css">
 	<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
 	<link rel="stylesheet" type="text/css" href="/css/jquery-ui.min.css">
-	<link rel="stylesheet" type="text/css" href="/css/bootstrap-horizon.css">
+	<link rel="stylesheet" type="text/css" href="/css/buttons.css">
+	<link rel="stylesheet" type="text/css" href="/css/vicons-font.css">
 	<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Lato:100,300,400">
 	<link rel="apple-touch-icon" sizes="180x180" href="/images/favicons/apple-touch-icon.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="/images/favicons/favicon-32x32.png">
@@ -19,6 +20,7 @@
 	<link rel="mask-icon" href="/images/favicons/safari-pinned-tab.svg" color="#5bbad5">
 	<meta name="theme-color" content="#ffffff">
 	<script type="text/javascript" src="/js/jquery-3.1.1.min.js"></script>
+	<script type="text/javascript" src="/js/jquery.validate.min.js"></script>
 	<script type="text/javascript" src="/js/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="/js/jquery.throttle-debounce.min.js"></script>
 	<script type="text/javascript" src="/js/bootstrap.min.js"></script>
@@ -46,13 +48,6 @@
 			</ul>
 
 			<ul class="nav navbar-nav navbar-right" style="margin-right:1em;">
-				<li>
-					<form class="navbar-form form-inline" method="post" role="form">
-			        	<div class="form-group">
-			          		<input id="movie-search" name="query" type="text" class="form-control" placeholder="Search">
-			        	</div>
-			      	</form>
-			    </li>
 			    <li>
 			      	{% if user %}
 			        <button onclick="window.location.href='/myprofile'" class="btn navbar-btn">
@@ -73,55 +68,49 @@
 </nav>
 
 <body>
-	<div class="container-fluid">
-		<div class="row" style="margin-top:1em; margin-bottom:1em;">
-			<div class="col-xs-3 col-md-3 text-center">
-				<a href="/settings">
-					<img class="profile-sub-icon img-responsive spin" src="/images/settings.png" style="float:right;">
-				</a>
-			</div>
-			<div id="profile-picture-container" class="col-xs-6 col-md-6 text-center">
-				<img id="profile-picture" src="/images/koala-{{color}}.png" class="img-circle img-responsive">
-			</div>
-			<div class="col-xs-3 col-md-3 text-center">
-				<a href="/entercode">
-					<img class="profile-sub-icon img-responsive pulse" src="/images/sell.png" style="float:left;">
-				</a>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-xs-12 col-md-12 text-center">
-				<span style="font-size:2em;">{{user.username}}</span>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-xs-12 col-md-12 text-center">
-				<span style="font-size:2em;">{{user.reputation}}</span>
-				<img src="/images/star.png" class="img-responsive" style="display:inline-block;">
-			</div>
-		</div>
-		<div class="row" style="margin-top:2em;">
-			<div class="col-xs-12 col-md-12 text-center">
-				<span style="font-size:3em;">selling</span>
-			</div>
-		</div>
-		<div class="row row-horizon poster-row text-center" style="margin-bottom:3em;">
-			{% for movie in selling %}
-			<div class="col-xs-6 col-md-3 text-center">
-				<div class="poster-container">
-					<a href="/code?id={{movie.key.id()}}" class="darken">
-				      	<img src="https://image.tmdb.org/t/p/w342/{{movie.posterurl}}" class="img-responsive poster-med" movie-title="{{movie.title}}">
-						<div class="poster-title-container">
-							<div class="poster-title">
-						    	{{movie.title}}<br>${{ "{0:0.2f}".format(movie.price) }}
-						    </div>
-						</div>
-				    </a>
+	<section>
+		<div class="container-fluid">
+			<div class="row" style="margin-bottom:4em;">
+				<div class="col-xs-12 col-md-12 text-center">
+					<span style="font-size:3em;">Settings</span>
+					<img src="/images/settings.png" class="" style="width:4em; height:4em; margin-left:1em; margin-bottom:1em;">
 				</div>
 			</div>
-			{% endfor %}
 		</div>
-	</div>
+	</section>
+
+	<section>
+		<div class="container-fluid">
+			<div class="row text-center">
+				<div class="col-xs-12 col-md-12 text-center">
+					<form method="post" id="settingsform">
+						<div class="form-group">
+							<label style="font-family: 'Lato', sans-serif; font-weight:300;" for="settings-username">Username <span style="font-weight: 400; color:red;">{{usererror}}</span></label>
+							<input type="text" name="username" id="settings-username" class="form-control" placeholder="username" style="margin: 0 auto; width:75%" value="{{user.username}}" required>
+						</div>
+						<div class="form-group">
+							<label style="font-family: 'Lato', sans-serif; font-weight:300;" for="settings-email">Contact Email <span style="font-weight: 400; color:red;">{{emailerror}}</span></label>
+							<input type="text" name="email" id="settings-email" class="form-control" placeholder="contact email" style="margin: 0 auto; width:75%" value="{{user.email}}" required>
+						</div>
+						<div class="form-group text-center">
+							<div class="col-xs-12 col-md-12 text-center">
+								<button type="submit" class="btn button button--itzel button--size-l button--border-thin" style="display:inline-block; height: 4em;">
+									<i class="button__icon icon icon-write"></i>
+									<span style="font-weight:300;">Update</span>
+								</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+			<div class="row text-center" style="margin-top:3em;">
+				<div class="col-xs-12 col-md-12">
+					<span style="font-weight:300">Site feature requests can be emailed to admin@kodala.codes</span>
+				</div>
+			</div>
+		</div>
+	</section>
+
 </body>
 
 </html>

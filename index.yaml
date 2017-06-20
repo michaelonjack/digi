@@ -18,6 +18,28 @@ indexes:
 
 - kind: Code
   properties:
+  - name: codeformat
+  - name: price
+
+- kind: Code
+  properties:
+  - name: sellerid
+  - name: created
+    direction: desc
+
+- kind: Code
+  properties:
+  - name: title
+  - name: price
+
+- kind: Review
+  properties:
+  - name: createdby
+  - name: created
+    direction: desc
+
+- kind: Review
+  properties:
   - name: sellerid
   - name: created
     direction: desc

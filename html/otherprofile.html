@@ -20,6 +20,7 @@
 	<meta name="theme-color" content="#ffffff">
 	<script type="text/javascript" src="/js/jquery-3.1.1.min.js"></script>
 	<script type="text/javascript" src="/js/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="/js/jquery.throttle-debounce.min.js"></script>
 	<script type="text/javascript" src="/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="/js/digi.js"></script>
 </head>
@@ -38,17 +39,17 @@
 	    </div>
 		<div class="collapse navbar-collapse" id="myNavbar">
 			<ul class="nav navbar-nav">
-				<li><a href="#">UltraViolet</a></li>
-				<li><a href="#">iTunes</a></li>
-				<li><a href="#">Google Play</a></li>
-				<li><a href="#">DMA</a></li>
+				<li><a href="/allcodes?format=1&page=1">UltraViolet</a></li>
+				<li><a href="/allcodes?format=2&page=1">iTunes</a></li>
+				<li><a href="/allcodes?format=3&page=1">Google Play</a></li>
+				<li><a href="/allcodes?format=4&page=1">DMA</a></li>
 			</ul>
 
 			<ul class="nav navbar-nav navbar-right" style="margin-right:1em;">
 				<li>
-					<form class="navbar-form form-inline" role="form">
+					<form class="navbar-form form-inline" method="post" role="form">
 			        	<div class="form-group">
-			          		<input id="movie-search" type="text" class="form-control" placeholder="Search">
+			          		<input id="movie-search" name="query" type="text" class="form-control" placeholder="Search">
 			        	</div>
 			      	</form>
 			    </li>
@@ -75,7 +76,7 @@
 	<div class="container-fluid">
 		<div class="row" style="margin-top:1em; margin-bottom:1em;">
 			<div class="col-xs-3 col-md-3 text-center">
-				<a href="">
+				<a href="/reviews?id={{otheruser.userid}}">
 					<img class="profile-sub-icon img-responsive spin" src="/images/review.png" style="float:right;">
 				</a>
 			</div>
@@ -112,7 +113,7 @@
 				      	<img src="https://image.tmdb.org/t/p/w342/{{movie.posterurl}}" class="img-responsive poster-med" movie-title="{{movie.title}}">
 						<div class="poster-title-container">
 							<div class="poster-title">
-						    	{{movie.title}}
+						    	{{movie.title}}<br>${{ "{0:0.2f}".format(movie.price) }}
 						    </div>
 						</div>
 				    </a>
