@@ -12,6 +12,15 @@ body {
 	padding-top: 70px;
 }
 
+.ui-autocomplete {
+	z-index: 3000;
+}
+
+#movie-search {  
+	font-family: 'Lato', sans-serif;
+	font-weight:400;
+}
+
 .code-poster {
 	height:21.7em;
 	width:14.56em; 

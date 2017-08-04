@@ -49,7 +49,7 @@
 				<li>
 					<form class="navbar-form form-inline" method="post" role="form">
 			        	<div class="form-group">
-			          		<input id="movie-search" name="query" type="text" class="form-control" placeholder="Search">
+			          		<input id="movie-search" name="query" type="search" class="form-control" placeholder="Search">
 			        	</div>
 			      	</form>
 			    </li>
@@ -113,7 +113,7 @@
 				      	<img src="https://image.tmdb.org/t/p/w342/{{movie.posterurl}}" class="img-responsive poster-med" movie-title="{{movie.title}}">
 						<div class="poster-title-container">
 							<div class="poster-title">
-						    	{{movie.title}}<br>${{ "{0:0.2f}".format(movie.price) }}
+						    	{{movie.title}}<br>{{formats[movie.codeformat]}}<br>${{ "{0:0.2f}".format(movie.price) }}
 						    </div>
 						</div>
 				    </a>

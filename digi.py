@@ -17,10 +17,16 @@ jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
 
 
 colors = ["green", "red", "blue", "yellow", "purple"]
+all_formats = ["", "Ultraviolet", "iTunes", "Google Play", "DMA"]
 ULTRAVIOLET = 1
 ITUNES = 2
 GOOGLEPLAY = 3
 DMA = 4
+
+all_quality = ["", "SD", "HD", "UHD"]
+SD = 1
+HD = 2
+UHD = 3
 
 def getFormatStr(formatNum):
     if formatNum == ULTRAVIOLET:
@@ -67,6 +73,7 @@ class Code(ndb.Model):
     movieid = ndb.StringProperty()
     price = ndb.FloatProperty()
     codeformat = ndb.IntegerProperty()
+    quality = ndb.IntegerProperty()
     title = ndb.StringProperty()
     posterurl = ndb.StringProperty()
     backdropurl = ndb.StringProperty()
@@ -133,8 +140,17 @@ def addReview(sellerid, buyerid, createdby, comment, rating):
     return newReview
 
 
-def addCode(seller_id, movie_id, price, code_format, title, poster_url, backdrop_url):
-    newCode = Code(sellerid=seller_id, movieid=movie_id, price=price, codeformat=code_format, title=title, posterurl=poster_url, backdropurl=backdrop_url, purchased=None)
+def addCode(seller_id, movie_id, price, code_format, quality, title, poster_url, backdrop_url):
+    newCode = Code(sellerid=seller_id, 
+                    movieid=movie_id, 
+                    price=price, 
+                    codeformat=code_format, 
+                    quality=quality, 
+                    title=title, 
+                    posterurl=poster_url, 
+                    backdropurl=backdrop_url, 
+                    purchased=None)
+
     key = newCode.put()
 
 def getRecentCodesForFormat(_format):
@@ -146,7 +162,7 @@ def getRecentCodesForFormat(_format):
 def getAllCodesForFormat(_format):
     query = Code.query(Code.codeformat == _format).order(+Code.price)
 
-    result = query.fetch(20)
+    result = query.fetch()
     return result
 
 def getAllCodes():
@@ -210,6 +226,7 @@ class SearchResultsPage(Handler):
 
         self.render("searchresults.html", 
                     codes=codes,
+                    formats=all_formats,
                     query=query,
                     currpage=page,
                     numpages=numpages,
@@ -232,7 +249,8 @@ class MyProfilePage(Handler):
         selling = getCodesForSeller(user.userid)
         self.render("myprofile.html", 
                     color=random.choice(colors), 
-                    selling=selling, 
+                    selling=selling,
+                    formats=all_formats, 
                     user=user, 
                     log_url=log_url)
 
@@ -245,9 +263,10 @@ class OtherProfilePage(Handler):
     def get(self):
         otheruserid = self.request.get("id")
         otheruser = getUser(otheruserid)
-        currentuser = getUser(users.get_current_user().user_id())
-
+        currentuser = users.get_current_user()
+        
         if currentuser:
+            currentuser = getUser(currentuser.user_id())
             log_url = users.create_logout_url('/')
 
         else:
@@ -256,7 +275,8 @@ class OtherProfilePage(Handler):
         selling = getCodesForSeller(otheruser.userid)
         self.render("otherprofile.html",
                     color=random.choice(colors), 
-                    selling=selling, 
+                    selling=selling,
+                    formats=all_formats, 
                     currentuser=currentuser, 
                     otheruser=otheruser, 
                     log_url=log_url)
@@ -284,11 +304,12 @@ class PostCodePage(Handler):
         title = self.request.get("title")
         price = float(self.request.get("price"))
         code_format = int(self.request.get("format"))
+        quality = int(self.request.get("quality"))
         movie_id = self.request.get("movie-id")
         poster_url = self.request.get("poster-url");
         backdrop_url = self.request.get("backdrop-url");
 
-        addCode(seller_id, movie_id, price, code_format, title, poster_url, backdrop_url)
+        addCode(seller_id, movie_id, price, code_format, quality, title, poster_url, backdrop_url)
 
         # return to account page
         selling = getCodesForSeller(user.user_id())
@@ -310,7 +331,8 @@ class CodePage(Handler):
             log_url = users.create_login_url('/')
 
         self.render("code.html", 
-                    code=code, 
+                    code=code,
+                    quality=all_quality, 
                     seller=seller, 
                     user=user, 
                     log_url=log_url)
@@ -481,7 +503,12 @@ class AJAXCodeSearchResults(Handler):
 
         results = []
         for code in codes:
-            if code.title.lower().startswith( query.lower() ):
+            if (
+                ((code.title.lower().startswith( query.lower() )) or
+                (code.title.lower().startswith("the ") and code.title[4:].lower().startswith( query.lower() )) or
+                (code.title.lower().startswith("a ") and code.title[2:].lower().startswith( query.lower() ))) and
+                (code.title not in results)
+            ):
                 results.append( code.title )
 
         jsonResponse = "{ \"results\": ["

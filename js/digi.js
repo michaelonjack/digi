@@ -73,13 +73,13 @@ function initSearchbar() {
 
 	if(jQuery('#movie-search').length > 0) {
 		var request = null;
-		jQuery('#movie-search').keyup(jQuery.debounce(0, function() { 
+		jQuery('#movie-search').keyup(/*jQuery.debounce(0,*/ function() { 
 			var query = jQuery('#movie-search').val();
 			var endpoint = '/ajaxcodesearch?q=' + query;
 
 			var searchResults = [];
 			jQuery('#movie-search').autocomplete({source: searchResults});
-			if (query.length > 1) {
+			if (query.length > 0) {
 				// If a previous request is in progress when a new request is made, abort the previous request
 				if (request != null) { 
 					request.abort();
@@ -90,12 +90,13 @@ function initSearchbar() {
 					for (var i=0; i<10 && i<json.results.length; i++) { 
 						var result = json.results[i].title;
 						searchResults.push(result);
+						console.log(result);
 					}
 				
 					jQuery('#movie-search').autocomplete({source: searchResults});
 				});
 			} 
-		}));
+		});
 	}
 }
 
