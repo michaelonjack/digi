@@ -28,6 +28,11 @@ SD = 1
 HD = 2
 UHD = 3
 
+all_types = ["", "Movie", "Collection", "Television"]
+MOVIE = 1
+COLLECTION = 2
+Television = 3
+
 def getFormatStr(formatNum):
     if formatNum == ULTRAVIOLET:
         return "UltraViolet"
