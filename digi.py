@@ -175,7 +175,7 @@ def getAllCodesForFormat(_format):
     return result
 
 def getAllCodes():
-    return Code.query().fetch()
+    return Code.query().order(+Code.price).fetch()
 
 def getCodesForSeller(sellerid):
     query = Code.query(Code.sellerid == sellerid).order(-Code.created)
@@ -219,7 +219,12 @@ class MainPage(Handler):
 class SearchResultsPage(Handler):
     def get(self):
         query = self.request.get("q")
-        codes = getCodesByName(query)
+        all_codes = getAllCodes()
+        codes = []
+        for code in all_codes:
+            if query.lower() in code.title.lower():
+                codes.append(code) 
+        #codes = getCodesByName(query)
 
         page = int(self.request.get("page"))
         user = users.get_current_user()
