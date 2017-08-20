@@ -33,6 +33,7 @@ function setSelectedMovie() {
 		jQuery('#form-poster-url').val(poster.attr('poster-url'));
 		jQuery('#form-backdrop-url').val(poster.attr('backdrop-url'));
 		jQuery('#form-movie-title').val(poster.attr('movie-title'));
+		jQuery('#form-season').val(poster.attr('season'));
 
 		jQuery('#form-row').show();
 	});
@@ -60,12 +61,9 @@ function initSearchbar() {
 			if ( jQuery('#movie-option').is(':checked') ) {
 				endpoint = 'https://api.themoviedb.org/3/search/movie?api_key=f8bacc22524d435a1476adae350b4d41&query=' + query;
 			}
-			else if ( jQuery('#collection-option').is(':checked') ) {
-				endpoint = 'https://api.themoviedb.org/3/search/collection?api_key=f8bacc22524d435a1476adae350b4d41&query=' + query;
-			}
 			else if ( jQuery('#television-option').is(':checked') ) {
 				endpoint = 'https://api.themoviedb.org/3/search/tv?api_key=f8bacc22524d435a1476adae350b4d41&query=' + query;
-				// Get the tv id
+				// Take the #1 result from the search and create a request for the show to display seasons
 				jQuery.ajax({
 					url: endpoint,
 					async: false
@@ -88,6 +86,7 @@ function initSearchbar() {
 							jQuery(this).closest('.poster-column').show();
 							if (result.poster_path) {
 
+								// Set the attributes for the images in the Results row
 								jQuery(this).attr('movie-id', result.id);
 								jQuery(this).attr('poster-url', result.poster_path);
 								jQuery(this).attr('backdrop-url', result.backdrop_path);
@@ -96,6 +95,7 @@ function initSearchbar() {
 								if( jQuery('#movie-option').is(':checked') ) {
 									jQuery(this).attr('movie-title', result.title);
 									jQuery(this).siblings().find('.poster-title').text(result.title);
+									jQuery(this).attr('season', '-1');
 								}
 								else if( jQuery('#collection-option').is(':checked') ) {
 									jQuery(this).attr('movie-title', result.name);
@@ -114,13 +114,18 @@ function initSearchbar() {
 							jQuery(this).closest('.poster-column').show();
 							if (season.poster_path) {
 
-								jQuery(this).attr('movie-id', season.id);
+								jQuery(this).attr('movie-id', json.id);
 								jQuery(this).attr('poster-url', season.poster_path);
 								jQuery(this).attr('backdrop-url', json.backdrop_path);
 								jQuery(this).attr('src', 'https://image.tmdb.org/t/p/w500/' + season.poster_path);
-								jQuery(this).attr('movie-title', json.name + ' Season ' + season.season_number);
-								jQuery(this).siblings().find('.poster-title').text(json.name + ' Season ' + season.season_number);
-
+								jQuery(this).attr('season', season.season_number);
+								if(season.season_number === 0) {
+									jQuery(this).attr('movie-title', json.name + ' Complete');
+									jQuery(this).siblings().find('.poster-title').text(json.name + ' Complete');
+								} else {
+									jQuery(this).attr('movie-title', json.name + ' Season ' + season.season_number);
+									jQuery(this).siblings().find('.poster-title').text(json.name + ' Season ' + season.season_number);
+								}
 							} else {
 								// If the image couldn't be loaded, remove the column from the results
 								jQuery(this).closest('.poster-column').hide();
@@ -138,6 +143,7 @@ function initSearchbar() {
 				});
 
 			} else { 
+				// Search bar is empty, hide the Results div
 				jQuery('#results').hide();
 			}
 		});
@@ -224,13 +230,25 @@ function setCodeDetails() {
 		jQuery("#details-trailer").hide();
 
 		var movieid = jQuery("body").attr("movieid");
-		var video_base_url = "https://www.youtube.com/embed/";
-		var video_options = "?modestbranding=1&autohide=1&showinfo=0&controls=0";
+		var code_type = jQuery("#code-type").attr("value");
+		code_type = code_type === '1' ? 'movie' : 'tv';
+
 		var imdb_base_url = "https://www.imdb.com/title/";
 		var rotten_base_url = "https://www.rottentomatoes.com/m/";
-		var video_endpoint = "https://api.themoviedb.org/3/movie/" + movieid + "/videos?api_key=f8bacc22524d435a1476adae350b4d41&language=en-US";
-		var movie_endpoint = "https://api.themoviedb.org/3/movie/" + movieid + "?api_key=f8bacc22524d435a1476adae350b4d41&language=en-US";
-	
+		var video_base_url = "https://www.youtube.com/embed/";
+		var video_options = "?modestbranding=1&autohide=1&showinfo=0&controls=0";
+
+		var video_endpoint = '';
+		var info_endpoint = '';
+		if (code_type === 'movie') {
+			video_endpoint = "https://api.themoviedb.org/3/movie/" + movieid + "/videos?api_key=f8bacc22524d435a1476adae350b4d41&language=en-US";
+			info_endpoint = "https://api.themoviedb.org/3/movie/" + movieid + "?api_key=f8bacc22524d435a1476adae350b4d41&language=en-US";
+		}
+		else if (code_type === 'tv') {
+			video_endpoint = "https://api.themoviedb.org/3/tv/" + movieid + "/videos?api_key=f8bacc22524d435a1476adae350b4d41&language=en-US";
+			info_endpoint = "https://api.themoviedb.org/3/tv/" + movieid + "?api_key=f8bacc22524d435a1476adae350b4d41&language=en-US";
+		}
+
 		jQuery.getJSON(video_endpoint, function(json) { 
 
 			if (json.results.length > 0) {
@@ -241,14 +259,38 @@ function setCodeDetails() {
 			}
 		});
 
-		jQuery.getJSON(movie_endpoint, function(json) { 
+		jQuery.getJSON(info_endpoint, function(json) { 
 			
 			if (json) {
+				
 				jQuery('#details-synopsis').text(json.overview);
-				jQuery('#details-runtime').text(json.runtime + " minutes");
-				jQuery('#details-release').text(new Date(json.release_date).toDateString());
-				jQuery('#imdb-link').attr('href', imdb_base_url + json.imdb_id);
-				jQuery('#rotten-link').attr('href', rotten_base_url + json.title.replace(/[ ·-]/g, "_").replace(/[:'.,!?]/g, ""));
+				if (code_type === 'tv') {
+					var season_num = parseInt( jQuery('#season').attr('value') );
+					
+					var season = '';
+					for(var i=0; i<json.seasons.length; i++) {
+						if (json.seasons[i].season_number === season_num) {
+							season = json.seasons[i];
+							break;
+						}
+					}
+
+					if (season_num !== 0) {
+						jQuery('#details-runtime').text(season.episode_count.toString() + " episodes");
+						jQuery('#details-release').text(new Date(season.air_date).toDateString());
+					} else {
+						// We'll consider season 0 = Complete series
+						jQuery('#details-runtime').text(json.seasons.length.toString() + " seasons");
+						jQuery('#details-release').text(new Date(json.first_air_date).toDateString());
+					}
+					jQuery('#imdb-link').css({'opacity':'0.2', 'pointer-events':'none'});
+					jQuery('#rotten-link').css({'opacity':'0.2', 'pointer-events':'none'});
+				} else {
+					jQuery('#details-runtime').text(json.runtime + " minutes");
+					jQuery('#details-release').text(new Date(json.release_date).toDateString());
+					jQuery('#imdb-link').attr('href', imdb_base_url + json.imdb_id);
+					jQuery('#rotten-link').attr('href', rotten_base_url + json.title.replace(/[ ·-]/g, "_").replace(/[:'.,!?]/g, ""));
+				}
 			}
 		});
 	}
@@ -266,13 +308,18 @@ function initCodeTypeRadio() {
 
 		if (jQuery(this).attr('id') === 'movie-option') {
 			jQuery('#movie').attr('placeholder', 'search for a movie');
-		}
-		else if (jQuery(this).attr('id') === 'collection-option') {
-			jQuery('#movie').attr('placeholder', 'search for a collection');
+			jQuery('#form-type').val("1");
 		}
 		else if (jQuery(this).attr('id') === 'television-option') {
 			jQuery('#movie').attr('placeholder', 'search for a tv show');
+			jQuery('#form-type').val("2");
 		}
+		/*
+		else if (jQuery(this).attr('id') === 'collection-option') {
+			jQuery('#movie').attr('placeholder', 'search for a collection');
+			jQuery('#form-type').val("3");
+		}
+		*/
 	});
 }
 

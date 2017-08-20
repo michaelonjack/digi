@@ -94,7 +94,7 @@
 			<div class="col-xs-12 col-md-12">
 				<div class="row text-center" id="details-title">
 					<div class="col-xs-12 col-md-12">
-						<span>{{code.title}}</span>
+						<span id="title">{{code.title}}</span>
 					</div>
 				</div>
 				<div class="row text-center" id="details-subtitle">
@@ -130,13 +130,13 @@
 						</div>
 						<div class="row" style="margin-top:0.5em">
 							<div class="col-xs-12 col-md-12">
-								<span style="font-weight:300">Runtime</span><br>
+								<span style="font-weight:300">{% if code.codetype == 2 %} Length {% else %} Runtime {% endif %}</span><br>
 								<div id="details-runtime"></div>
 							</div>
 						</div>
 						<div class="row" style="margin-top:0.5em;">
 							<div class="col-xs-12 col-md-12">
-								<span style="font-weight:300">Release Date</span><br>
+								<span style="font-weight:300">{% if code.codetype == 2 %} Air Date {% else %} Release Date {% endif %}</span><br>
 								<div id="details-release"></div>
 							</div>
 						</div>
@@ -164,7 +164,7 @@
 								</a>
 							</div>
 							<div class="col-xs-2 col-md-2">
-								<a href="https://www.themoviedb.org/movie/{{code.movieid}}" target="_blank">
+								<a href="https://www.themoviedb.org/{% if code.codetype == 1 %}m{% else %}tv{% endif %}/{{code.movieid}}" target="_blank">
 									<img class="img-responsive" width="50px" height="50px" src="/images/tmdb.png">
 								</a>
 							</div>
@@ -210,7 +210,9 @@
 				</form>
 			</div>
 		</div>
-	</div>	
+	</div>
+	<div id="code-type" value="{{code.codetype}}" style="display:none;"></div>
+	<div id="season" value="{{code.season}}" style="display:none;"></div>
 </body>
 
 <div id="confirmModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="confirmHeading" aria-hidden="true">
@@ -227,7 +229,7 @@
             </div>
             <div class="modal-body text-left">
             	{% if user and seller.userid == user.user_id() %}
-                	<p class="text-center">If you choose to delete your code for "{{code.title}}"" it will be permanently removed from the site.</p>
+                	<p class="text-center">If you choose to delete your code for "{{code.title}}" it will be permanently removed from the site.</p>
                 {% else %}
                 	<p>Here's how the buying process works:</p>
                 	<ol>

@@ -28,10 +28,10 @@ SD = 1
 HD = 2
 UHD = 3
 
-all_types = ["", "Movie", "Collection", "Television"]
+all_types = ["", "Movie", "Television", "Collection"]
 MOVIE = 1
-COLLECTION = 2
-Television = 3
+TELEVISION = 2
+COLLECTION = 3
 
 def getFormatStr(formatNum):
     if formatNum == ULTRAVIOLET:
@@ -79,9 +79,11 @@ class Code(ndb.Model):
     price = ndb.FloatProperty()
     codeformat = ndb.IntegerProperty()
     quality = ndb.IntegerProperty()
+    codetype = ndb.IntegerProperty()
     title = ndb.StringProperty()
     posterurl = ndb.StringProperty()
     backdropurl = ndb.StringProperty()
+    season = ndb.IntegerProperty()
     purchased = ndb.DateTimeProperty()
     created = ndb.DateTimeProperty(auto_now_add=True)
 
@@ -145,15 +147,17 @@ def addReview(sellerid, buyerid, createdby, comment, rating):
     return newReview
 
 
-def addCode(seller_id, movie_id, price, code_format, quality, title, poster_url, backdrop_url):
+def addCode(seller_id, movie_id, price, code_format, code_type, quality, title, poster_url, backdrop_url, season):
     newCode = Code(sellerid=seller_id, 
                     movieid=movie_id, 
                     price=price, 
-                    codeformat=code_format, 
+                    codeformat=code_format,
+                    codetype=code_type, 
                     quality=quality, 
                     title=title, 
                     posterurl=poster_url, 
-                    backdropurl=backdrop_url, 
+                    backdropurl=backdrop_url,
+                    season=season, 
                     purchased=None)
 
     key = newCode.put()
@@ -161,7 +165,7 @@ def addCode(seller_id, movie_id, price, code_format, quality, title, poster_url,
 def getRecentCodesForFormat(_format):
     query = Code.query(Code.codeformat == _format).order(-Code.created)
 
-    result = query.fetch(20)
+    result = query.fetch(10)
     return result
 
 def getAllCodesForFormat(_format):
@@ -309,12 +313,14 @@ class PostCodePage(Handler):
         title = self.request.get("title")
         price = float(self.request.get("price"))
         code_format = int(self.request.get("format"))
+        code_type = int(self.request.get("type"))
         quality = int(self.request.get("quality"))
         movie_id = self.request.get("movie-id")
-        poster_url = self.request.get("poster-url");
-        backdrop_url = self.request.get("backdrop-url");
+        poster_url = self.request.get("poster-url")
+        backdrop_url = self.request.get("backdrop-url")
+        season = int(self.request.get("season"))
 
-        addCode(seller_id, movie_id, price, code_format, quality, title, poster_url, backdrop_url)
+        addCode(seller_id, movie_id, price, code_format, code_type, quality, title, poster_url, backdrop_url, season)
 
         # return to account page
         selling = getCodesForSeller(user.user_id())
