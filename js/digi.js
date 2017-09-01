@@ -323,6 +323,11 @@ function initCodeTypeRadio() {
 
 jQuery(document).ready( function() {
 
+	// Allows mobile users to simulate the hover effect by touching
+	jQuery('.hover').bind('touchstart touchend', function(e) {
+        jQuery(this).toggleClass('hover_effect');
+    });
+
 	initSearchbar();
 	initCodeTypeRadio();
 	setSelectedMovie();

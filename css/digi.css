@@ -3,11 +3,6 @@ span {
 	font-weight:lighter;
 }
 
-.radio-span {
-	font-family: 'Lato', sans-serif;
-	font-weight:lighter;
-}
-
 th {
 	font-family: 'Lato', sans-serif;
 	font-weight:300;
@@ -108,16 +103,21 @@ a.darken img.poster-sm {
     transition: all 0.5s linear;
 }
 
-a.darken:hover img.poster-med {
+a.darken:hover img.poster-med, a.hover_effect {
     opacity: 0.5;          
 }
 
-a.darken:hover img.poster-sm {
+a.darken:hover img.poster-sm, a.hover_effect {
     opacity: 0.5;          
 }
 
-a.darken:hover .poster-title-container {
+a.darken:hover .poster-title-container, a.hover_effect {
     opacity:1;
+}
+
+.hover {
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;        
 }
 
 .navbar-brand {
