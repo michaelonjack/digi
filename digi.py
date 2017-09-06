@@ -2,10 +2,13 @@ import os
 import jinja2
 import webapp2
 import random
+import logging
 from google.appengine.api import mail
 from google.appengine.api import users
 from auth import getMovieDBKey
 from google.appengine.ext import ndb
+from urllib import urlencode
+from urllib2 import urlopen, Request
 
 template_dir = os.path.join(os.path.dirname(__file__),'html')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
@@ -33,17 +36,8 @@ MOVIE = 1
 TELEVISION = 2
 COLLECTION = 3
 
-def getFormatStr(formatNum):
-    if formatNum == ULTRAVIOLET:
-        return "UltraViolet"
-    elif formatNum == ITUNES:
-        return "iTunes"
-    elif formatNum == GOOGLEPLAY:
-        return "Google Play"
-    else:
-        return "Disney Movies Anywhere"
 
-
+VALIDATOR = 0
 
 
 # THREE FUNCTIONS FOR RENDERING BASIC TEMPLATES
@@ -81,6 +75,7 @@ class Code(ndb.Model):
     quality = ndb.IntegerProperty()
     codetype = ndb.IntegerProperty()
     title = ndb.StringProperty()
+    code = ndb.StringProperty()
     posterurl = ndb.StringProperty()
     backdropurl = ndb.StringProperty()
     season = ndb.IntegerProperty()
@@ -94,6 +89,23 @@ class Review(ndb.Model):
     created = ndb.DateTimeProperty(auto_now_add=True)
     comment = ndb.StringProperty()
     rating = ndb.IntegerProperty()
+
+class Transaction(ndb.Expando):
+    # Attributes defined here are referenced in other parts of the application.
+    # Using the ndb.Expando type allows us to add additional Attributes later on.
+    dateSent = ndb.DateTimeProperty(auto_now_add=True)
+    transaction_id = ndb.StringProperty()
+    payment_status = ndb.StringProperty()
+    custom = ndb.StringProperty()
+    verified = ndb.BooleanProperty()
+
+    @classmethod
+    def transaction_exists(cls, id, status):
+        match = Transaction.query(ndb.AND(Transaction.transaction_id == id, Transaction.payment_status == status, Transaction.verified == True)).fetch()
+        if match:
+            return True
+        else:
+            return False
 
 
 def getUser(userid):
@@ -147,7 +159,7 @@ def addReview(sellerid, buyerid, createdby, comment, rating):
     return newReview
 
 
-def addCode(seller_id, movie_id, price, code_format, code_type, quality, title, poster_url, backdrop_url, season):
+def addCode(seller_id, movie_id, price, code_format, code_type, quality, title, poster_url, backdrop_url, season, code):
     newCode = Code(sellerid=seller_id, 
                     movieid=movie_id, 
                     price=price, 
@@ -157,7 +169,8 @@ def addCode(seller_id, movie_id, price, code_format, code_type, quality, title, 
                     title=title, 
                     posterurl=poster_url, 
                     backdropurl=backdrop_url,
-                    season=season, 
+                    season=season,
+                    code=code, 
                     purchased=None)
 
     key = newCode.put()
@@ -180,6 +193,34 @@ def getAllCodes():
 def getCodesForSeller(sellerid):
     query = Code.query(Code.sellerid == sellerid).order(-Code.created)
     return query.fetch()
+
+
+
+
+
+
+def verify_ipn(data):
+    # prepares provided data set to inform PayPal we wish to validate the response
+    data["cmd"] = "_notify-validate"
+    params = urlencode(data)
+ 
+    # sends the data and request to the PayPal Sandbox
+    req = Request("""https://www.paypal.com/cgi-bin/webscr""", params)
+    req.add_header("Content-type", "application/x-www-form-urlencoded")
+    # reads the response back from PayPal
+    response = urlopen(req)
+    status = response.read()
+ 
+    # If not verified
+    if not status == "VERIFIED":
+        return False
+ 
+    # if not the correct currency
+    if not data["mc_currency"] == "USD":
+        return False
+ 
+    # otherwise...
+    return True
 
 
 
@@ -317,6 +358,7 @@ class PostCodePage(Handler):
 
         title = self.request.get("title")
         price = float(self.request.get("price"))
+        code = self.request.get("code")
         code_format = int(self.request.get("format"))
         code_type = int(self.request.get("type"))
         quality = int(self.request.get("quality"))
@@ -325,7 +367,11 @@ class PostCodePage(Handler):
         backdrop_url = self.request.get("backdrop-url")
         season = int(self.request.get("season"))
 
-        addCode(seller_id, movie_id, price, code_format, code_type, quality, title, poster_url, backdrop_url, season)
+        addCode(seller_id, movie_id, 
+                price, code_format, 
+                code_type, quality, 
+                title, poster_url, 
+                backdrop_url, season, code)
 
         # return to account page
         selling = getCodesForSeller(user.user_id())
@@ -349,7 +395,8 @@ class CodePage(Handler):
         self.render("code.html", 
                     code=code,
                     quality=all_quality, 
-                    seller=seller, 
+                    seller=seller,
+                    all_formats=all_formats, 
                     user=user, 
                     log_url=log_url)
 
@@ -365,19 +412,108 @@ class CodePage(Handler):
             code.key.delete()
             self.redirect("/myprofile")
 
-        # The user who submit the form is NOT the seller of the code
-        # This means we're performing a BUY operation
+        # Users should never get to this state but if they do redirect to home
         else:
-            subject = "Kodala: " + buyer.username + " would like to purchase your " + code.title + " (" + getFormatStr(code.codeformat) + ") digital code" 
-            message = ("Hi, " + seller.username + "\n\n" + buyer.username + " would like to purchase your " + code.title + " (" + getFormatStr(code.codeformat) + ") digital code.\n" +
-                        "You can contact them at " + buyer.email + " to disclose your preferred payment method.\n\n" 
-                        "Here's a link to the code: https://kodala.codes/code?id=" + str(code.key.id()))
-            mail.send_mail(sender="kodalacodes@gmail.com",
-                        to=seller.email,
-                        subject=subject,
-                        body=message)
+            self.redirect("/")
 
-            self.redirect("/code?id=" + str(codeid))
+
+class CodePurchasedPage(Handler):
+    def post(self):
+        post_data = self.request.POST.copy()
+        buyer = getUser( self.request.get("buyerid") )
+        codeid = int(self.request.get("codeid"))
+        code = getCode(codeid)
+        
+        seller = None
+        if code:
+            seller = getUser(code.sellerid)
+
+        # Create a new Transaction instance for this deal
+        payment = Transaction(receiver_email = post_data['receiver_email'],
+                            transaction_id = post_data['txn_id'],
+                            transaction_type = post_data['txn_type'],
+                            payment_type = post_data['payment_type'],
+                            payment_status = post_data['payment_status'],
+                            amount = post_data['mc_gross'],
+                            currency = post_data['mc_currency'],
+                            payer_email = post_data['payer_email'],
+                            first_name = post_data['first_name'],
+                            last_name = post_data['last_name'],
+                            verified = False)
+
+
+        # Check if the transaction has already been recorded in the DB
+        if Transaction.transaction_exists(payment.transaction_id, payment.payment_status):
+            # This transaction has already been verified and processed.
+            logging.debug('Transaction already exists')
+
+
+        # Check if the transaction is verified by PayPal
+        elif verify_ipn(post_data):
+
+            # Once the IPN has been verified by PayPal, verify the transaction
+            payment.verified = True
+            # Enter transaction into the DB
+            payment.put()
+
+            # The seller has the code saved in the DB so it is eligible for automatic delivery
+            if code is not None and code.code is not None and code.code != "":
+
+                # Send message to the seller
+                subject = "Kodala: " + buyer.username + " has purchased your " + code.title + " (" + str(all_formats[code.codeformat]) + ") digital code" 
+                message = ("Hi, " + seller.username + "\n\n" + buyer.username + " has purchased your " + code.title + " (" + str(all_formats[code.codeformat]) + ") digital code.\n\n" +
+                            "Payment has been sent to " + seller.email + "\n" +
+                            "Since your code was saved to Kodala, it has already been delivered to the buyer and your listing for this code has been removed.\n" + 
+                            "You can leave the buyer feedback on their profile at https://kodala.codes/profile?id=" + buyer.userid)
+                
+                mail.send_mail(sender="kodalacodes@gmail.com",
+                            to=seller.email,
+                            subject=subject,
+                            body=message)
+
+
+                # Send message to the buyer
+                subject = "Kodala: Here's your digital code!" 
+                message = ("Hi, " + buyer.username + "\n\n" +  
+                            "Here's your code for " + code.title + " (" + str(all_formats[code.codeformat]) + ") : \n\n" + code.code + "\n\n" +
+                            "After reeedming your code you can contact or leave the seller feedback on their profile at https://kodala.codes/profile?id=" + code.sellerid)
+                mail.send_mail(sender="kodalacodes@gmail.com",
+                            to=buyer.email,
+                            subject=subject,
+                            body=message)
+
+                # Delete the code from the database now that it has been purchased
+                code.key.delete()
+
+            # The code is NOT saved in the DB. Manual delivery required
+            else:
+
+                # Send message to the seller
+                subject = "Kodala: Your digital code has been purchased!" 
+                message = ("Hi, " + seller.username + "\n\n" + buyer.username + " has purchased your " + code.title + " (" + str(all_formats[code.codeformat]) + ") digital code.\n\n" +
+                            "Payment has been sent to " + seller.email + "\n" +
+                            "Since your code was not saved to Kodala, you will need to manually send the code to the buyer at their contact address of " + buyer.email + "\n" + 
+                            "You can leave the buyer feedback on their profile at https://kodala.codes/profile?id=" + buyer.userid + "\n\n" +
+                            "Don't forget to send your code!")
+                mail.send_mail(sender="kodalacodes@gmail.com",
+                            to=seller.email,
+                            subject=subject,
+                            body=message)
+
+
+                # Send message to the buyer
+                subject = "Kodala: Payment sent!" 
+                message = ("Hi, " + buyer.username + "\n\n" +  
+                            "Your payment to " + seller.username + " has been sent. Expect an email from the seller with your code soon!\n\n" +
+                            "You can contact or leave the seller feedback on their profile at https://kodala.codes/profile?id=" + code.sellerid)
+                mail.send_mail(sender="kodalacodes@gmail.com",
+                            to=buyer.email,
+                            subject=subject,
+                            body=message)
+
+
+        else:
+            logging.info("paypal not valid")
 
 class AllCodesPage(Handler):
     def get(self):
@@ -553,6 +689,7 @@ application = webapp2.WSGIApplication([
     ('/entercode', PostCodePage),
     (r'/message.*', MessagePage),
     (r'/code.*', CodePage),
+    (r'/notify_purchase.*', CodePurchasedPage),
     (r'/allcodes.*', AllCodesPage),
     (r'/settings', SettingsPage),
     (r'/reviews.*', ReviewsPage),

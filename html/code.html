@@ -181,33 +181,49 @@
 		</div>
 		<div class="row">
 			<div class="col-xs-12 col-md-12 text-center">
-				<form id="action-button" method="post">
-					{% if user and seller.userid == user.user_id() %}
+				
+				{% if user and seller.userid == user.user_id() %}
+					<form id="action-button" method="post">
 						<div class="form-group text-center">
 							<button type="submit" class="btn button button--itzel button--size-l button--border-thin" style="display:inline-block; height:4em;">
 								<i class="button__icon icon icon-trash"></i>
 								<span style="font-weight:300;">Remove</span>
 							</button>
 						</div>
-					{% else %}
-						{% if user %}
+						<input type="hidden" name="codeid" value="{{code.key.id()}}">
+				{% else %}
+					{% if user %}
+						<form id="action-button" method="post" action="https://www.paypal.com/cgi-bin/webscr">
+							<input type="hidden" name="cmd" value="_xclick">
+							<input type="hidden" name="business" value="{{seller.email}}">
+							<input type="hidden" name="item_name" value="Kodala - {{code.title}} ({{all_formats[code.codeformat]}})">
+							<input type="hidden" name="amount" value="{{ "{0:0.2f}".format(code.price) }}">
+							<input type="hidden" name="no_shipping" value="1">
+							<input type="hidden" name="no_note" value="1">
+							<input type="hidden" name="quantity" value="1">
+							<input type="hidden" name="currency_code" value="USD">
+							<input type="hidden" name="return" value="https://kodala.codes/">
+							<input type="hidden" name="cancel_return" value="https://kodala.codes/code?id={{code.key.id()}}">
+							<input type="hidden" name="notify_url" value="https://kodala.codes/notify_purchase?codeid={{code.key.id()}}&buyerid={{user.user_id()}}">
 							<div class="form-group text-center">
 								<button type="submit" class="btn button button--itzel button--size-l button--border-thin" style="display:inline-block; height:4em;">
 									<i class="button__icon icon icon-cart"></i>
 									<span style="font-weight:300;">Buy</span>
 								</button>
 							</div>
-						{% else %}
+					{% else %}
+						<form id="action-button" method="post">
 							<div class="form-group text-center">
 								<button type="button" onclick="location.href='/myprofile'" class="btn button button--itzel button--size-l button--border-thin" style="display:inline-block; height:4em;">
 									<i class="button__icon icon icon-user"></i>
 									<span style="font-weight:300;">Log In to Purchase</span>
 								</button>
 							</div>
-						{% endif %}
 					{% endif %}
-					<input type="hidden" name="codeid" value="{{code.key.id()}}">
+				{% endif %}
+				
 				</form>
+				
 			</div>
 		</div>
 	</div>
@@ -231,14 +247,12 @@
             	{% if user and seller.userid == user.user_id() %}
                 	<p class="text-center">If you choose to delete your code for "{{code.title}}" it will be permanently removed from the site.</p>
                 {% else %}
-                	<p>Here's how the buying process works:</p>
-                	<ol>
-                		<li>When you press the button, an email message is sent to the seller of this code</li>
-                		<li>The seller is informed that you would like to purchase this code and is instructed to reply to your request</li>
-                		<li>The seller will respond via email with their preferred method of payment (Paypal, Venmo, etc.)</li>
-                		<li>You pay the seller the requested amount and the seller should provide you the code!</li>
-                		<li>Leave feedback for the seller indicating a good/bad transaction by clicking the star icon on the seller's profile</li>
-                	</ol>
+                	<p class="text-center">You will be redirected to PayPal to complete your purchase.</p>
+                	{% if code.code != "" and code.code is not none %}
+                		<p class="text-center">The seller of this code has enabled automatic delivery. You will receive the code once the payment has been sent.</p> 
+                	{% else %}
+                		<p class="text-center">The seller of this code has <b>not</b> enabled automatic delivery. The seller will manually email you the code once the payment has been received.</p>
+                	{% endif %}
                 {% endif %}
             </div>
             <div class="modal-footer text-center">

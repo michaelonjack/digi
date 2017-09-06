@@ -328,6 +328,13 @@ jQuery(document).ready( function() {
         jQuery(this).toggleClass('hover_effect');
     });
 
+    jQuery('#form-code').tooltip({
+    	'trigger': 'focus',
+    	'title': 'By entering your code now it will automatically be emailed to the buyer after payment is sent. '
+    				+ 'If you do not enter your code now, you will need to manually send the code to the buyer after '
+    				+ 'payment is received.'
+    });
+
 	initSearchbar();
 	initCodeTypeRadio();
 	setSelectedMovie();
