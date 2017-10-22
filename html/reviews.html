@@ -86,7 +86,7 @@
 					<div class="col-xs-12 col-sm-2 col-md-2">
 						<div class="form-group">
 							<select class="form-control" name="role" id="review-role" style="text-align: center; width:100%;" required>
-								<option value="" disabled selected>-Role-</option>
+								<option value="" disabled selected>-You were the-</option>
 								<option value="buyer">Buyer</option>
 								<option value="seller">Seller</option>
 							</select>
@@ -132,10 +132,10 @@
 						{% for review in reviews %}
 							<tr {% if review.rating > 0 %} class="success" {% else %} class="danger" {% endif %}>
 								<td class="text-center">
-									<a href="/profile?id={{review.sellerid}}">View</a>
+									<a href="/profile?id={{review.sellerid}}">{{User.get_username(review.sellerid)}}</a>
 								</td>
 								<td class="text-center">
-									<a href="/profile?id={{review.buyerid}}">View</a>
+									<a href="/profile?id={{review.buyerid}}">{{User.get_username(review.buyerid)}}</a>
 								</td>
 								<td class="text-center">
 									<span style="font-weight:300">{{review.comment}}</span>

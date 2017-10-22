@@ -37,8 +37,6 @@ TELEVISION = 2
 COLLECTION = 3
 
 
-VALIDATOR = 0
-
 
 # THREE FUNCTIONS FOR RENDERING BASIC TEMPLATES
 class Handler(webapp2.RequestHandler):
@@ -67,6 +65,59 @@ class User(ndb.Model):
     reputation = ndb.IntegerProperty()
     created = ndb.DateTimeProperty(auto_now_add=True)
 
+    @classmethod
+    def add_user(cls, user):
+        newUser = User(userid=user.user_id(), username=user.nickname(), email=user.email(), reputation=0)
+        newUser.put()
+        return newUser
+
+    @classmethod
+    def get_user(cls, id):
+        matchedUser = User.query(User.userid == id).fetch(1)
+
+        # No user found
+        if len(matchedUser) == 0:
+            return None
+
+        return matchedUser[0]
+
+    @classmethod
+    def get_username(cls, id):
+        matchedUser = User.query(User.userid == id).fetch(1)
+
+        # No user found
+        if len(matchedUser) == 0:
+            return ""
+
+        return matchedUser[0].username
+
+    @classmethod
+    def get_user_by_username(cls, username):
+        query = User.query(User.username == username)
+        result = query.fetch()
+
+        if(len(result) > 0):
+            return result[0]
+        else:
+            return None
+
+    @classmethod
+    def get_user_by_email(cls, email):
+        query = User.query(User.email == email)
+        result = query.fetch()
+
+        if(len(result) > 0):
+            return result[0]
+        else:
+            return None
+
+
+
+
+
+
+
+
 class Code(ndb.Model):
     sellerid = ndb.StringProperty()
     movieid = ndb.StringProperty()
@@ -82,6 +133,61 @@ class Code(ndb.Model):
     purchased = ndb.DateTimeProperty()
     created = ndb.DateTimeProperty(auto_now_add=True)
 
+    @classmethod
+    def add_code(cls, seller_id, movie_id, price, code_format, code_type, quality, title, poster_url, backdrop_url, season, code):
+        newCode = Code(sellerid=seller_id, 
+                        movieid=movie_id, 
+                        price=price, 
+                        codeformat=code_format,
+                        codetype=code_type, 
+                        quality=quality, 
+                        title=title, 
+                        posterurl=poster_url, 
+                        backdropurl=backdrop_url,
+                        season=season,
+                        code=code, 
+                        purchased=None)
+
+        key = newCode.put()
+
+    @classmethod
+    def get_code(cls, id):
+        return Code.get_by_id(id)
+
+    @classmethod
+    def get_all_codes(cls):
+        return Code.query().order(+Code.price).fetch()
+
+    @classmethod
+    def get_all_codes_for_format(cls, _format):
+        query = Code.query(Code.codeformat == _format).order(+Code.price)
+        result = query.fetch()
+        return result
+
+    @classmethod
+    def get_codes_for_seller(cls, sellerid):
+        query = Code.query(Code.sellerid == sellerid).order(-Code.created)
+        return query.fetch()
+
+    @classmethod
+    def get_codes_by_name(cls, name):
+        query = Code.query(Code.title == name).order(+Code.price)
+        results = query.fetch()
+        return results
+
+    @classmethod
+    def get_recent_codes_for_format(cls, _format):
+        query = Code.query(Code.codeformat == _format).order(-Code.created)
+        result = query.fetch(10)
+        return result
+
+
+
+
+
+
+
+
 class Review(ndb.Model):
     buyerid = ndb.StringProperty()
     sellerid = ndb.StringProperty()
@@ -89,6 +195,26 @@ class Review(ndb.Model):
     created = ndb.DateTimeProperty(auto_now_add=True)
     comment = ndb.StringProperty()
     rating = ndb.IntegerProperty()
+
+    @classmethod
+    def add_review(cls, sellerid, buyerid, createdby, comment, rating):
+        newReview = Review(sellerid=sellerid, buyerid=buyerid, createdby=createdby, comment=comment, rating=rating)
+        newReview.put()
+        return newReview
+
+    @classmethod
+    def get_reviews_for_user(cls, userid):
+        query = Review.query( ndb.AND(ndb.OR(Review.sellerid == userid, Review.buyerid == userid), Review.createdby != userid)).order(+Review.createdby).order(-Review.created)
+        results = query.fetch()
+        return results
+
+
+
+
+
+
+
+
 
 class Transaction(ndb.Expando):
     # Attributes defined here are referenced in other parts of the application.
@@ -114,96 +240,7 @@ class Transaction(ndb.Expando):
             return match[0]
         else:
             return None
-
-
-def getUser(userid):
-    matchedUser = User.query(User.userid == userid).fetch(1)
-
-    # No user found
-    if len(matchedUser) == 0:
-        return None
-
-    return matchedUser[0]
-
-def getUserByUsername(username):
-    query = User.query(User.username == username)
-    result = query.fetch()
-
-    if(len(result) > 0):
-        return result[0]
-    else:
-        return None
-
-def getReviewsForUser(userid):
-    query = Review.query( ndb.AND(ndb.OR(Review.sellerid == userid, Review.buyerid == userid), Review.createdby != userid)).order(+Review.createdby).order(-Review.created)
-    results = query.fetch()
-    return results
-
-def getUserByEmail(email):
-    query = User.query(User.email == email)
-    result = query.fetch()
-
-    if(len(result) > 0):
-        return result[0]
-    else:
-        return None
-
-def addUser(user):
-    newUser = User(userid=user.user_id(), username=user.nickname(), email=user.email(), reputation=0)
-    newUser.put()
-    return newUser
-
-def getCode(id):
-    return Code.get_by_id(id)
-
-def getCodesByName(name):
-    query = Code.query(Code.title == name).order(+Code.price)
-    results = query.fetch()
-    return results 
-
-def addReview(sellerid, buyerid, createdby, comment, rating):
-    newReview = Review(sellerid=sellerid, buyerid=buyerid, createdby=createdby, comment=comment, rating=rating)
-    newReview.put()
-    return newReview
-
-
-def addCode(seller_id, movie_id, price, code_format, code_type, quality, title, poster_url, backdrop_url, season, code):
-    newCode = Code(sellerid=seller_id, 
-                    movieid=movie_id, 
-                    price=price, 
-                    codeformat=code_format,
-                    codetype=code_type, 
-                    quality=quality, 
-                    title=title, 
-                    posterurl=poster_url, 
-                    backdropurl=backdrop_url,
-                    season=season,
-                    code=code, 
-                    purchased=None)
-
-    key = newCode.put()
-
-def getRecentCodesForFormat(_format):
-    query = Code.query(Code.codeformat == _format).order(-Code.created)
-
-    result = query.fetch(10)
-    return result
-
-def getAllCodesForFormat(_format):
-    query = Code.query(Code.codeformat == _format).order(+Code.price)
-
-    result = query.fetch()
-    return result
-
-def getAllCodes():
-    return Code.query().order(+Code.price).fetch()
-
-def getCodesForSeller(sellerid):
-    query = Code.query(Code.sellerid == sellerid).order(-Code.created)
-    return query.fetch()
-
-
-
+ 
 
 
 
@@ -247,10 +284,10 @@ class MainPage(Handler):
         else:
             log_url = users.create_login_url('/')
 
-        ultraviolet = getRecentCodesForFormat(ULTRAVIOLET)
-        itunes = getRecentCodesForFormat(ITUNES)
-        googleplay = getRecentCodesForFormat(GOOGLEPLAY)
-        disney = getRecentCodesForFormat(DMA)
+        ultraviolet = Code.get_recent_codes_for_format(ULTRAVIOLET)
+        itunes = Code.get_recent_codes_for_format(ITUNES)
+        googleplay = Code.get_recent_codes_for_format(GOOGLEPLAY)
+        disney = Code.get_recent_codes_for_format(DMA)
         self.render("digi.html", 
                     ultraviolet=ultraviolet, 
                     itunes=itunes, 
@@ -268,12 +305,11 @@ class MainPage(Handler):
 class SearchResultsPage(Handler):
     def get(self):
         query = self.request.get("q")
-        all_codes = getAllCodes()
+        all_codes = Code.get_all_codes()
         codes = []
         for code in all_codes:
             if query.lower() in code.title.lower():
                 codes.append(code) 
-        #codes = getCodesByName(query)
 
         page = int(self.request.get("page"))
         user = users.get_current_user()
@@ -303,13 +339,13 @@ class SearchResultsPage(Handler):
 
 class MyProfilePage(Handler):
     def get(self):
-        user = getUser(users.get_current_user().user_id())
+        user = User.get_user(users.get_current_user().user_id())
         if user is None:
-            user = addUser(users.get_current_user())
+            user = User.add_user(users.get_current_user())
         
         log_url = users.create_logout_url('/')
 
-        selling = getCodesForSeller(user.userid)
+        selling = Code.get_codes_for_seller(user.userid)
         self.render("myprofile.html", 
                     color=random.choice(colors), 
                     selling=selling,
@@ -325,7 +361,7 @@ class MyProfilePage(Handler):
 class OtherProfilePage(Handler):
     def get(self):
         otheruserid = self.request.get("id")
-        otheruser = getUser(otheruserid)
+        otheruser = User.get_user(otheruserid)
         currentuser = users.get_current_user()
 
         if otheruser is None:
@@ -333,13 +369,13 @@ class OtherProfilePage(Handler):
             return
         
         if currentuser:
-            currentuser = getUser(currentuser.user_id())
+            currentuser = User.get_user(currentuser.user_id())
             log_url = users.create_logout_url('/')
 
         else:
             log_url = users.create_login_url('/')
 
-        selling = getCodesForSeller(otheruser.userid)
+        selling = Code.get_codes_for_seller(otheruser.userid)
         self.render("otherprofile.html",
                     color=random.choice(colors), 
                     selling=selling,
@@ -379,28 +415,28 @@ class PostCodePage(Handler):
         backdrop_url = self.request.get("backdrop-url")
         season = int(self.request.get("season"))
 
-        addCode(seller_id, movie_id, 
+        Code.add_code(seller_id, movie_id, 
                 price, code_format, 
                 code_type, quality, 
                 title, poster_url, 
                 backdrop_url, season, code)
 
         # return to account page
-        selling = getCodesForSeller(user.user_id())
+        selling = Code.get_codes_for_seller(user.user_id())
         self.redirect("/myprofile")
 
 
 class CodePage(Handler):
     def get(self):
         codeid = int(self.request.get("id"))
-        code = getCode(codeid)
+        code = Code.get_code(codeid)
 
         if code is None:
             self.render("error.html")
             return
 
         user = users.get_current_user()
-        seller = getUser(code.sellerid)
+        seller = User.get_user(code.sellerid)
         log_url = ""
 
         if user:
@@ -418,10 +454,10 @@ class CodePage(Handler):
                     log_url=log_url)
 
     def post(self):
-        buyer = getUser( users.get_current_user().user_id() )
+        buyer = User.get_user( users.get_current_user().user_id() )
         codeid = int(self.request.get("codeid"))
-        code = getCode(codeid)
-        seller = getUser(code.sellerid)
+        code = Code.get_code(codeid)
+        seller = User.get_user(code.sellerid)
 
         # The user who submit the form is the seller of the code
         # This means we're performing a DELETE operation; not a BUY operation
@@ -437,13 +473,13 @@ class CodePage(Handler):
 class CodePurchasedPage(Handler):
     def post(self):
         post_data = self.request.POST.copy()
-        buyer = getUser( self.request.get("buyerid") )
+        buyer = User.get_user( self.request.get("buyerid") )
         codeid = int(self.request.get("codeid"))
-        code = getCode(codeid)
+        code = Code.get_code(codeid)
         
         seller = None
         if code:
-            seller = getUser(code.sellerid)
+            seller = User.get_user(code.sellerid)
 
         # Create a new Transaction instance for this deal
         logging.debug(post_data)
@@ -560,7 +596,7 @@ class AllCodesPage(Handler):
         _format = int(self.request.get("format"))
         page = int(self.request.get("page"))
         user = users.get_current_user()
-        codes = getAllCodesForFormat(_format)
+        codes = Code.get_all_codes_for_format(_format)
         numpages = len(codes)/16 + (1 if len(codes)%16 > 0 else 0)
         codes = codes[(16*page-16):(16*page)]
         log_url = ""
@@ -587,8 +623,8 @@ class AllCodesPage(Handler):
 class MessagePage(Handler):
     def get(self):
         recipientid = self.request.get("recipient")
-        recipient = getUser(recipientid)
-        currentuser = getUser(users.get_current_user().user_id())
+        recipient = User.get_user(recipientid)
+        currentuser = User.get_user(users.get_current_user().user_id())
         log_url = ""
 
         if currentuser:
@@ -601,10 +637,10 @@ class MessagePage(Handler):
 
     def post(self):
         recipientid = self.request.get("recipientid")
-        recipient = getUser(recipientid)
+        recipient = User.get_user(recipientid)
         subject = self.request.get("subject")
         message = self.request.get("message")
-        currentuser = getUser(users.get_current_user().user_id())
+        currentuser = User.get_user(users.get_current_user().user_id())
 
         mail.send_mail(sender=currentuser.email,
                         to=recipient.email,
@@ -617,19 +653,19 @@ class MessagePage(Handler):
 
 class SettingsPage(Handler):
     def get(self):
-        user = getUser(users.get_current_user().user_id())
+        user = User.get_user(users.get_current_user().user_id())
         log_url = users.create_logout_url('/')
 
         self.render("settings.html", user=user, log_url=log_url)
 
     def post(self):
-        user = getUser(users.get_current_user().user_id())
+        user = User.get_user(users.get_current_user().user_id())
         log_url = users.create_logout_url('/')
         updatedusername = self.request.get("username")
         updatedemail = self.request.get("email")
 
-        userWithEmail = getUserByEmail(updatedemail)
-        userWithUsername = getUserByUsername(updatedusername)
+        userWithEmail = User.get_user_by_email(updatedemail)
+        userWithUsername = User.get_user_by_username(updatedusername)
 
         if ((userWithEmail is None or userWithEmail.userid == user.userid) 
             and (userWithUsername is None or userWithUsername.userid == user.userid)):
@@ -638,7 +674,7 @@ class SettingsPage(Handler):
             user.put()
             self.redirect("/settings")
 
-        elif getUserByUsername(updatedusername) is not None and userWithUsername.userid != user.userid:
+        elif User.get_user_by_username(updatedusername) is not None and userWithUsername.userid != user.userid:
             error = "(User with this username already exists.)"
             self.render("settings.html", user=user, log_url=log_url, usererror=error)
 
@@ -651,25 +687,25 @@ class SettingsPage(Handler):
 class ReviewsPage(Handler):
     def get(self):
         currentuser = users.get_current_user()
-        user = getUser( self.request.get("id") )
+        user = User.get_user( self.request.get("id") )
         
-        reviews = getReviewsForUser(user.userid)
+        reviews = Review.get_reviews_for_user(user.userid)
         log_url = ""
 
         if currentuser:
-            currentuser = getUser(currentuser.user_id())
+            currentuser = User.get_user(currentuser.user_id())
             log_url = users.create_logout_url('/')
 
         else:
             log_url = users.create_login_url('/')
 
-        self.render("reviews.html", reviewee=user, reviews=reviews, log_url=log_url, reviewer=currentuser)
+        self.render("reviews.html", reviewee=user, reviews=reviews, log_url=log_url, reviewer=currentuser, User = User)
 
     def post(self):
         role = self.request.get("role")
         rating = 1 if int(self.request.get("rating")) > 0 else -1
         comment = self.request.get("comment")
-        reviewee = getUser( self.request.get("reviewee") )
+        reviewee = User.get_user( self.request.get("reviewee") )
         reviewer = users.get_current_user().user_id()
 
         if rating > 0:
@@ -680,9 +716,9 @@ class ReviewsPage(Handler):
         reviewee.put()
 
         if role == "buyer":
-            addReview(reviewee.userid, reviewer, reviewer, comment, rating)
+            Review.add_review(reviewee.userid, reviewer, reviewer, comment, rating)
         else:
-            addReview(reviewer, reviewee.userid, reviewer, comment, rating)
+            Review.add_review(reviewer, reviewee.userid, reviewer, comment, rating)
 
         self.redirect("/reviews?id=" + reviewee.userid)
 
@@ -692,7 +728,7 @@ class AJAXCodeSearchResults(Handler):
         self.response.headers['Content-Type'] = 'application/json'
 
         query = self.request.get("q")
-        codes = getAllCodes()
+        codes = Code.get_all_codes()
 
         results = []
         for code in codes:
