@@ -100,12 +100,20 @@ class Transaction(ndb.Expando):
     verified = ndb.BooleanProperty()
 
     @classmethod
-    def transaction_exists(cls, id, status):
-        match = Transaction.query(ndb.AND(Transaction.transaction_id == id, Transaction.payment_status == status, Transaction.verified == True)).fetch()
+    def transaction_exists(cls, id):
+        match = Transaction.query(ndb.AND(Transaction.transaction_id == id, Transaction.verified == True)).fetch()
         if match:
             return True
         else:
             return False
+
+    @classmethod
+    def get_transaction(cls, id):
+        match = Transaction.query(ndb.AND(Transaction.transaction_id == id, Transaction.verified == True)).fetch()
+        if len(match) > 0:
+            return match[0]
+        else:
+            return None
 
 
 def getUser(userid):
@@ -127,7 +135,7 @@ def getUserByUsername(username):
         return None
 
 def getReviewsForUser(userid):
-    query = Review.query((Review.sellerid == userid or Review.buyerid == userid) and Review.createdby != userid).order(+Review.createdby).order(-Review.created)
+    query = Review.query( ndb.AND(ndb.OR(Review.sellerid == userid, Review.buyerid == userid), Review.createdby != userid)).order(+Review.createdby).order(-Review.created)
     results = query.fetch()
     return results
 
@@ -319,6 +327,10 @@ class OtherProfilePage(Handler):
         otheruserid = self.request.get("id")
         otheruser = getUser(otheruserid)
         currentuser = users.get_current_user()
+
+        if otheruser is None:
+            self.render("error.html")
+            return
         
         if currentuser:
             currentuser = getUser(currentuser.user_id())
@@ -382,6 +394,11 @@ class CodePage(Handler):
     def get(self):
         codeid = int(self.request.get("id"))
         code = getCode(codeid)
+
+        if code is None:
+            self.render("error.html")
+            return
+
         user = users.get_current_user()
         seller = getUser(code.sellerid)
         log_url = ""
@@ -429,27 +446,48 @@ class CodePurchasedPage(Handler):
             seller = getUser(code.sellerid)
 
         # Create a new Transaction instance for this deal
-        payment = Transaction(receiver_email = post_data['receiver_email'],
-                            transaction_id = post_data['txn_id'],
-                            transaction_type = post_data['txn_type'],
-                            payment_type = post_data['payment_type'],
-                            payment_status = post_data['payment_status'],
-                            amount = post_data['mc_gross'],
-                            currency = post_data['mc_currency'],
-                            payer_email = post_data['payer_email'],
-                            first_name = post_data['first_name'],
-                            last_name = post_data['last_name'],
-                            verified = False)
+        logging.debug(post_data)
+        payment = None
+        if 'payment_type' in post_data and 'txn_type' in post_data:
+            payment = Transaction(receiver_email = post_data['receiver_email'],
+                                transaction_id = post_data['txn_id'],
+                                transaction_type = post_data['txn_type'],
+                                payment_type = post_data['payment_type'],
+                                payment_status = post_data['payment_status'],
+                                amount = post_data['mc_gross'],
+                                currency = post_data['mc_currency'],
+                                payer_email = post_data['payer_email'],
+                                first_name = post_data['first_name'],
+                                last_name = post_data['last_name'],
+                                code_id = codeid,
+                                verified = False)
+
+        else:
+            logging.debug('POST request does not have a payment_type. Could be a filed claim from past purchase.')
 
 
         # Check if the transaction has already been recorded in the DB
-        if Transaction.transaction_exists(payment.transaction_id, payment.payment_status):
+        if Transaction.transaction_exists(post_data['txn_id']) or ('parent_txn_id' in post_data and Transaction.transaction_exists(post_data['parent_txn_id'])):
             # This transaction has already been verified and processed.
             logging.debug('Transaction already exists')
 
+            # Check if we're dealing with a filed claim from a past purchase
+            existingTrans = Transaction.get_transaction(post_data['txn_id'])
+            if not existingTrans:
+                existingTrans = Transaction.get_transaction(post_data['parent_txn_id'])
+            if existingTrans and 'case_type' in post_data:
+                existingTrans.case_type = post_data['case_type']
+                existingTrans.case_creation_date = post_data['case_creation_date']
+                existingTrans.case_info = post_data['buyer_additional_information']
+                existingTrans.put()
+            # Check if we're dealing with a refunded past purchase
+            elif existingTrans and 'payment_status' in post_data:
+                existingTrans.payment_status = post_data['payment_status']
+                existingTrans.put()
+
 
         # Check if the transaction is verified by PayPal
-        elif verify_ipn(post_data):
+        elif buyer is not None and verify_ipn(post_data):
 
             # Once the IPN has been verified by PayPal, verify the transaction
             payment.verified = True
@@ -482,8 +520,6 @@ class CodePurchasedPage(Handler):
                             subject=subject,
                             body=message)
 
-                # Delete the code from the database now that it has been purchased
-                code.key.delete()
 
             # The code is NOT saved in the DB. Manual delivery required
             else:
@@ -512,8 +548,12 @@ class CodePurchasedPage(Handler):
                             body=message)
 
 
+            # Delete the code from the database now that it has been purchased
+            code.key.delete()
+
+
         else:
-            logging.info("paypal not valid")
+            logging.info("paypal not valid or buyer was null")
 
 class AllCodesPage(Handler):
     def get(self):
@@ -612,6 +652,7 @@ class ReviewsPage(Handler):
     def get(self):
         currentuser = users.get_current_user()
         user = getUser( self.request.get("id") )
+        
         reviews = getReviewsForUser(user.userid)
         log_url = ""
 

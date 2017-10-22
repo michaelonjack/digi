@@ -34,6 +34,13 @@ indexes:
 
 - kind: Review
   properties:
+  - name: buyerid
+  - name: createdby
+  - name: created
+    direction: desc
+
+- kind: Review
+  properties:
   - name: createdby
   - name: created
     direction: desc
@@ -41,5 +48,12 @@ indexes:
 - kind: Review
   properties:
   - name: sellerid
+  - name: created
+    direction: desc
+
+- kind: Review
+  properties:
+  - name: sellerid
+  - name: createdby
   - name: created
     direction: desc
