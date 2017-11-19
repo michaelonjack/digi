@@ -758,6 +758,37 @@ class AJAXCodeSearchResults(Handler):
 
 
 
+class AJAXNextPageResults(Handler):
+    def get(self):
+
+        self.response.headers['Content-Type'] = 'application/json'
+
+        page = int(self.request.get("page"))
+        codeFormat = int(self.request.get("format"))
+
+        codes = Code.get_all_codes_for_format(codeFormat)
+        numpages = len(codes)/16 + (1 if len(codes)%16 > 0 else 0)
+        codes = codes[(16*page-16):(16*page)]
+
+        jsonResponse = "{ \"results\": ["
+        firstRecord = True
+        for code in codes:
+            if not firstRecord:
+                jsonResponse += " , ";
+            else:
+                firstRecord = False
+
+            jsonResponse += " { \"title\" : "
+            jsonResponse += "\"" + code.title + "\", "
+            jsonResponse += "\"price\" : \"" + str(code.price) + "\", "
+            jsonResponse += "\"id\" : \"" + str(code.key.id()) + "\", "
+            jsonResponse += "\"posterurl\" : \"" + code.posterurl + "\" "
+            jsonResponse += " } "
+
+        jsonResponse += "]}"
+
+        self.response.out.write(jsonResponse)
+
 
 application = webapp2.WSGIApplication([
     ('/', MainPage),
@@ -771,5 +802,6 @@ application = webapp2.WSGIApplication([
     (r'/settings', SettingsPage),
     (r'/reviews.*', ReviewsPage),
     (r'/search.*', SearchResultsPage),
-    (r'/ajaxcodesearch.*', AJAXCodeSearchResults)
+    (r'/ajaxcodesearch.*', AJAXCodeSearchResults),
+    (r'/ajaxgetnextpage.*', AJAXNextPageResults)
 ], debug=True)

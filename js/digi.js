@@ -321,6 +321,56 @@ function initCodeTypeRadio() {
 
 
 
+/*
+	Initializes the "Load More" button on the Code listing page
+	Clicking this button will dynamically load more codes on the page without refreshing
+*/
+var page = 1;
+function initLoadMoreButton() {
+	if ( jQuery('#loadMoreBtn').length < 1 ) {
+		return;
+	}
+
+	var format = jQuery('#codeFormat').attr('format');
+
+	// 16 is the maximum number of codes per page
+	// If there are less than 16 on the page then there are no more codes to load so remove the button
+	if (jQuery('.poster-container').length < 16*page ) {
+		jQuery('#loadMoreBtn').remove();
+		return;
+	}
+
+	jQuery('#loadMoreBtn').click(function() {
+		page += 1;
+		jQuery.getJSON('/ajaxgetnextpage?page=' + page.toString() + '&format=' + format, function(json) {
+			jQuery.each(json.results, function(index) {
+				var currCode = json.results[index];
+				var newCodeHTML = "";
+				newCodeHTML += "<div class='col-xs-6 col-md-3 text-center'>";
+				newCodeHTML += "	<div class='poster-container'>";
+				newCodeHTML += "		<a href='/code?id=" + currCode.id + "' class='darken hover'>";
+				newCodeHTML += "			<img src='https://image.tmdb.org/t/p/w342/" + currCode.posterurl + "' class='img-responsive poster-med' movie-title='" + currCode.title + "'>";
+				newCodeHTML += "			<div class='poster-title-container'>";
+				newCodeHTML += "				<div class='poster-title'>";
+				newCodeHTML += "					" + currCode.title + "<br>$" + parseFloat(currCode.price).toFixed(2).toString();
+				newCodeHTML += "				</div>";
+				newCodeHTML += "			</div>";
+				newCodeHTML += "		</a>";
+				newCodeHTML += "	</div>";
+				newCodeHTML += "</div>";
+
+				jQuery('.col-xs-6.col-md-3.text-center').last().after(newCodeHTML);
+			});
+
+			if (jQuery('.poster-container').length < 16*page ) {
+				jQuery('#loadMoreBtn').remove();
+			}
+		});
+	});
+}
+
+
+
 jQuery(document).ready( function() {
 
 	// Allows mobile users to simulate the hover effect by touching
@@ -337,6 +387,7 @@ jQuery(document).ready( function() {
 
 	initSearchbar();
 	initCodeTypeRadio();
+	initLoadMoreButton();
 	setSelectedMovie();
 	setCodeDetails();
 	validateMessageForm();
