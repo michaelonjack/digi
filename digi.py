@@ -36,6 +36,10 @@ MOVIE = 1
 TELEVISION = 2
 COLLECTION = 3
 
+SORT_BY_PRICE = 0
+SORT_BY_TITLE = 1
+SORT_BY_CREATED = 2
+
 
 
 # THREE FUNCTIONS FOR RENDERING BASIC TEMPLATES
@@ -155,14 +159,24 @@ class Code(ndb.Model):
         return Code.get_by_id(id)
 
     @classmethod
-    def get_all_codes(cls):
-        return Code.query().order(+Code.price).fetch()
+    def get_all_codes(cls, sortoption):
+        if sortoption == SORT_BY_PRICE:
+            return Code.query().order(+Code.price).fetch()
+        elif sortoption == SORT_BY_TITLE:
+            return Code.query().order(+Code.title).fetch()
+        else:
+            return Code.query().order(-Code.created).fetch()
+
+
 
     @classmethod
-    def get_all_codes_for_format(cls, _format):
-        query = Code.query(Code.codeformat == _format).order(+Code.price)
-        result = query.fetch()
-        return result
+    def get_all_codes_for_format(cls, _format, sortoption):
+        if sortoption == SORT_BY_PRICE:
+            return Code.query(Code.codeformat == _format).order(+Code.price).fetch()
+        elif sortoption == SORT_BY_TITLE:
+            return Code.query(Code.codeformat == _format).order(+Code.title).fetch()
+        else:
+            return Code.query(Code.codeformat == _format).order(-Code.created).fetch()
 
     @classmethod
     def get_codes_for_seller(cls, sellerid):
@@ -305,7 +319,7 @@ class MainPage(Handler):
 class SearchResultsPage(Handler):
     def get(self):
         query = self.request.get("q")
-        all_codes = Code.get_all_codes()
+        all_codes = Code.get_all_codes(SORT_BY_PRICE)
         codes = []
         for code in all_codes:
             if query.lower() in code.title.lower():
@@ -595,8 +609,14 @@ class AllCodesPage(Handler):
     def get(self):
         _format = int(self.request.get("format"))
         page = int(self.request.get("page"))
+        sort = self.request.get("sort")
+        if sort.isdigit():
+            sort = int(sort)%3
+        else:
+            sort = SORT_BY_PRICE
+
         user = users.get_current_user()
-        codes = Code.get_all_codes_for_format(_format)
+        codes = Code.get_all_codes_for_format(_format, sort)
         numpages = len(codes)/16 + (1 if len(codes)%16 > 0 else 0)
         codes = codes[(16*page-16):(16*page)]
         log_url = ""
@@ -610,6 +630,7 @@ class AllCodesPage(Handler):
         self.render("allcodes.html", 
                     codes=codes,
                     format=_format,
+                    sort=sort,
                     currpage=page,
                     numpages=numpages,
                     user=user, 
@@ -728,7 +749,7 @@ class AJAXCodeSearchResults(Handler):
         self.response.headers['Content-Type'] = 'application/json'
 
         query = self.request.get("q")
-        codes = Code.get_all_codes()
+        codes = Code.get_all_codes(SORT_BY_PRICE)
 
         results = []
         for code in codes:
@@ -765,8 +786,13 @@ class AJAXNextPageResults(Handler):
 
         page = int(self.request.get("page"))
         codeFormat = int(self.request.get("format"))
+        sort = self.request.get("sort")
+        if sort.isdigit():
+            sort = int(sort)%3
+        else:
+            sort = SORT_BY_PRICE
 
-        codes = Code.get_all_codes_for_format(codeFormat)
+        codes = Code.get_all_codes_for_format(codeFormat, sort)
         numpages = len(codes)/16 + (1 if len(codes)%16 > 0 else 0)
         codes = codes[(16*page-16):(16*page)]
 

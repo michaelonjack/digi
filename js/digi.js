@@ -332,6 +332,7 @@ function initLoadMoreButton() {
 	}
 
 	var format = jQuery('#codeFormat').attr('format');
+	var sort = jQuery('#sort-options').val();
 
 	// 16 is the maximum number of codes per page
 	// If there are less than 16 on the page then there are no more codes to load so remove the button
@@ -342,7 +343,7 @@ function initLoadMoreButton() {
 
 	jQuery('#loadMoreBtn').click(function() {
 		page += 1;
-		jQuery.getJSON('/ajaxgetnextpage?page=' + page.toString() + '&format=' + format, function(json) {
+		jQuery.getJSON('/ajaxgetnextpage?page=' + page.toString() + '&format=' + format + '&sort=' + sort, function(json) {
 			jQuery.each(json.results, function(index) {
 				var currCode = json.results[index];
 				var newCodeHTML = "";
@@ -371,6 +372,27 @@ function initLoadMoreButton() {
 
 
 
+
+/*
+	Initializes the Sort By selection box
+	This will reload the page with the newly selected sorting options
+*/
+function initSortOptionsSelect() { 
+	if( jQuery('#sort-options').length > 0 ) {
+		jQuery('#sort-options').change(function() {
+			var option = jQuery(this).val();
+			var format = jQuery('#codeFormat').attr('format');
+
+			window.location.href = "/allcodes?format=" + format + "&page=1&sort=" + option;
+		});
+	}
+}
+
+
+
+
+
+
 jQuery(document).ready( function() {
 
 	// Allows mobile users to simulate the hover effect by touching
@@ -388,6 +410,7 @@ jQuery(document).ready( function() {
 	initSearchbar();
 	initCodeTypeRadio();
 	initLoadMoreButton();
+	initSortOptionsSelect();
 	setSelectedMovie();
 	setCodeDetails();
 	validateMessageForm();

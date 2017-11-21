@@ -111,21 +111,25 @@
 						<input type="number" min="0" step="0.01" name="price" id="form-price" class="form-control" placeholder="price" style="margin: 0 auto; width:50%;" required>
 					</div>
 					<div id="form-format-container" class="form-group">
-					    <select class="form-control" id="form-format" name="format" style="text-align: center; margin: 0 auto; width:50%;" required>
-					      	<option value="" disabled selected>-Format-</option>
-					      	<option value="1">UltraViolet</option>
-					      	<option value="2">iTunes</option>
-					      	<option value="3">Google Play</option>
-					      	<option value="4">DMA</option>
-					    </select>
+						<div class="custom-select" style="width:50%;">
+						    <select class="form-control" id="form-format" name="format" required>
+						      	<option value="" disabled selected>-format-</option>
+						      	<option value="1">UltraViolet</option>
+						      	<option value="2">iTunes</option>
+						      	<option value="3">Google Play</option>
+						      	<option value="4">DMA</option>
+						    </select>
+						</div>
 					</div>
 					<div id="form-quality-container" class="form-group">
-					    <select class="form-control" id="form-quality" name="quality" style="text-align: center; margin: 0 auto; width:50%;" required>
-					      	<option value="" disabled selected>-Quality-</option>
-					      	<option value="1">SD</option>
-					      	<option value="2">HD</option>
-					      	<option value="3">4K UHD</option>
-					    </select>
+						<div class="custom-select" style="width:50%;">
+						    <select class="form-control" id="form-quality" name="quality" required>
+						      	<option value="" disabled selected>-quality-</option>
+						      	<option value="1">SD</option>
+						      	<option value="2">HD</option>
+						      	<option value="3">4K UHD</option>
+						    </select>
+						</div>
 					</div>
 					<div id="form-code-container" class="form-group">
 						<input type="text" id="form-code" name="code" class="form-control" placeholder="code (optional)" style="margin: 0 auto; width:50%;">

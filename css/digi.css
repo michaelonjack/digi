@@ -240,3 +240,31 @@ a.darken:hover .poster-title-container, a.hover_effect {
   animation-iteration-count: infinite;
 }
 
+
+/* css for stripped down select boxes */
+.custom-select {
+    padding: 0;
+    margin: 0 auto;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+.custom-select select {
+    border: none;
+    box-shadow: none;
+    background-color: transparent;
+    background-image: none;
+    font-family: 'Lato', sans-serif;
+	font-weight:300;
+    -webkit-appearance: none;
+       -moz-appearance: none;
+            appearance: none;
+}
+
+.custom-select select:focus {
+    outline: none;
+}
+/* end css for stripped down select boxes */
+

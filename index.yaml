@@ -14,12 +14,22 @@ indexes:
   properties:
   - name: codeformat
   - name: created
+
+- kind: Code
+  properties:
+  - name: codeformat
+  - name: created
     direction: desc
 
 - kind: Code
   properties:
   - name: codeformat
   - name: price
+
+- kind: Code
+  properties:
+  - name: codeformat
+  - name: title
 
 - kind: Code
   properties:

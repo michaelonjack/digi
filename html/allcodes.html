@@ -78,7 +78,7 @@
 
 	<section id="title">
 		<div class="container-fluid">
-			<div class="row" style="margin-bottom:4em;">
+			<div class="row" style="margin-bottom:0em;">
 				{% if format == 1 %}
 					<div class="col-xs-12 col-md-12 text-center">
 						<span id="codeFormat" format="{{format}}" style="font-size:3em;">UltraViolet</span>
@@ -100,6 +100,18 @@
 						<img src="/images/dma.png" class="" style="width:4em; height:4em; margin-left:1em; margin-bottom:1em;">
 					</div>
 				{% endif %}
+			</div>
+			<div class="row" style="margin-bottom:4em;">
+				<div class="col-xs-12 col-md-12 text-center">
+					<div class="custom-select form-control text-center" style="width:20%;">
+						<select class="text-center" name="sort-options" id="sort-options" style="width:100%;">
+							<option value="" disabled>Sort By</option>
+							<option value="0" {% if sort == 0 %} selected {% endif %}>Price</option>
+							<option value="1" {% if sort == 1 %} selected {% endif %}>Title</option>
+							<option value="2" {% if sort == 2 %} selected {% endif %}>Date Added</option>
+						</select>
+					</div>
+				</div>
 			</div>
 		</div>
 	</section>
