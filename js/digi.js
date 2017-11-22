@@ -363,6 +363,11 @@ function initLoadMoreButton() {
 				jQuery('.col-xs-6.col-md-3.text-center').last().after(newCodeHTML);
 			});
 
+			// Allows mobile users to simulate the hover effect by touching
+			jQuery('.hover').bind('touchstart touchend', function(e) {
+		        jQuery(this).toggleClass('hover_effect');
+		    });
+
 			if (jQuery('.poster-container').length < 16*page ) {
 				jQuery('#loadMoreBtn').remove();
 			}
